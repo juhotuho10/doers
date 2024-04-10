@@ -8,13 +8,86 @@ use ndarray_rand::rand::{thread_rng, Rng};
 use std::vec;
 
 /**
-Generates a latin-hypercube design.
+Generates a classic latin-hypercube design.
 
 # Parameters
 
 - `n`: `usize`
   The number of factors to generate samples for.
 
+- `samples`: `usize`
+  The number of samples to generate for each factor.
+
+- `random_state`: `u64`
+  Seed-number that controls the random draws.
+
+# Returns
+
+- `H`: `Array2<f32>`
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
+
+# Example
+
+A 4-sample design:
+```rust
+let n = 4;
+let samples = 4;
+let random_state = 42;
+let example_array = lhs_classic(n, samples, random_state);
+// resulting Array2:
+// [[0.32606143,  0.5795995,  0.773937,     0.88865906],
+//  [0.9321394,   0.8648242,  0.0036229491, 0.09710106],
+//  [0.039839655, 0.28775924, 0.30786952,   0.4689691],
+//  [0.5738912,   0.13481694, 0.5605331,    0.6929374]]
+```
+
+# Guarantees
+
+None. But columns tend to be equally spaced since in the case of samples = 4
+Array1s with uniform distribution are scaled with  another array: [0.25, 0.5, 0.75, 1]
+and then shuffled suffled
+*/
+#[allow(dead_code)]
+pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
+    // Generate a random array using `rng`
+    let mut rng = SmallRng::seed_from_u64(random_state);
+
+    let array_shape = (n, samples);
+    let u = Array::random_using(array_shape, Uniform::new(0., 1.), &mut rng);
+
+    let cut = Array::linspace(0., 1., samples + 1);
+
+    let a = cut.slice(s![..samples]);
+    let b = cut.slice(s![1..samples + 1]);
+    let mut h_array: Array2<f32> = Array::zeros(array_shape);
+
+    println!("{}", (&b - &a) + a);
+
+    for i in 0..n {
+        let mut mutable = h_array.slice_mut(s![i, ..]);
+        let u_slice = u.slice(s![i, ..]);
+        //println!("{}", (&b - &a) + a);
+        let assignable = &u_slice * (&b - &a) + a;
+        mutable.assign(&assignable);
+    }
+
+    for i in 0..n {
+        let mut row = h_array.row_mut(i);
+        row.as_slice_mut().unwrap().shuffle(&mut thread_rng());
+    }
+
+    h_array = h_array.t().to_owned();
+
+    h_array
+}
+
+/**
+Generates a latin-hypercube design.
+
+# Parameters
+
+- `n`: `usize`
+  The number of factors to generate samples for.
 
 - `samples`: `usize`
   The number of samples to generate for each factor (Default: `n`).
@@ -34,66 +107,10 @@ Generates a latin-hypercube design.
 
 A 3-factor design (defaults to 3 samples):
 ```rust
-// lhs(3, random_state=42);
-// Expected output:
-// Array2([[0.12484671, 0.95539205, 0.24399798],
-//         [0.53288616, 0.38533955, 0.86703834],
-//         [0.68602787, 0.31690477, 0.38533151]])
-```
-
-A 4-factor design with 6 samples:
-```
-// lhs(4, samples=6, random_state=42);
-// Expected output:
-// Array2([[0.06242335, 0.19266575, 0.88202411, 0.89439364],
-//         [0.19266977, 0.53538985, 0.53030416, 0.49498498],
-//         ...
-//         [0.93530882, 0.15845238, 0.7386575, 0.09977641]])
-
-```
-
-A 2-factor design with 5 centered samples:
-```
-// lhs(2, samples=5, criterion="center", random_state=42);
-// Expected output:
-// Array2([[0.1, 0.9],
-//        [0.5, 0.5],
-//        ...
-//        [0.9, 0.3]])
-
+lhs_classic(n=4, samples = 4, random_state=42);
+// resulting Array2:
 ```
 */
-#[allow(dead_code)]
-pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
-    // Generate a random array using `rng`
-    let mut rng = SmallRng::seed_from_u64(random_state);
-
-    let array_shape = (n, samples);
-    let u = Array::random_using(array_shape, Uniform::new(0., 1.), &mut rng);
-
-    let cut = Array::linspace(0., 1., samples + 1);
-
-    let a = cut.slice(s![..samples]);
-    let b = cut.slice(s![1..samples + 1]);
-    let mut h_array: Array2<f32> = Array::zeros(array_shape);
-
-    for i in 0..n {
-        let mut mutable = h_array.slice_mut(s![i, ..]);
-        let u_slice = u.slice(s![i, ..]);
-        let assignable = &u_slice * (&b - &a) + a;
-        mutable.assign(&assignable);
-    }
-
-    for i in 0..n {
-        let mut row = h_array.row_mut(i);
-        row.as_slice_mut().unwrap().shuffle(&mut thread_rng());
-    }
-
-    h_array = h_array.t().to_owned();
-
-    h_array
-}
-
 #[allow(dead_code)]
 pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     // Generate a random array using `rng`
@@ -119,14 +136,38 @@ pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> 
     h_array.mapv(|x| x as f32)
 }
 
+/**
+Generates a latin-hypercube design.
+
+# Parameters
+
+- `n`: `usize`
+  The number of factors to generate samples for.
+
+- `samples`: `usize`
+  The number of samples to generate for each factor (Default: `n`).
+
+- `iterations`: `usize`
+  The number of iterations in the maximin and correlations algorithms (Default: 5).
+
+- `random_state`: `u64`
+  Seed-number that controls the random draws.
+
+# Returns
+
+- `H`: `Array2<f64>`
+  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+
+# Example
+
+A 3-factor design (defaults to 3 samples):
+```rust
+lhs_classic(n=4, samples = 4, random_state=42);
+// resulting Array2:
+```
+*/
 #[allow(dead_code)]
-pub fn lhs_maximin(
-    n: usize,
-    samples: usize,
-    random_state: u64,
-    iterations: u16,
-    centered: bool,
-) -> Array2<f32> {
+pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut max_dist = 0.;
     let mut h_array: Array2<f32> = Array2::from_elem((n, samples), 0.);
     let mut rng = SmallRng::seed_from_u64(random_state);
@@ -134,11 +175,8 @@ pub fn lhs_maximin(
     for _ in 0..iterations {
         let random_int = rng.gen_range(0..u64::MAX);
         rng = SmallRng::seed_from_u64(random_int);
-        // Assuming lhs_classic and lhs_centered are modified to accept &mut rng instead of random_state
-        let h_candidate = match centered {
-            false => lhs_classic(n, samples, random_int),
-            true => lhs_centered(n, samples, random_int),
-        };
+
+        let h_candidate = lhs_classic(n, samples, random_int);
 
         let dist_array = pairwise_euclidean_dist(&h_candidate).to_owned();
 
@@ -154,6 +192,37 @@ pub fn lhs_maximin(
     }
     h_array
 }
+
+/**
+Generates a latin-hypercube design.
+
+# Parameters
+
+- `n`: `usize`
+  The number of factors to generate samples for.
+
+- `samples`: `usize`
+  The number of samples to generate for each factor (Default: `n`).
+
+- `iterations`: `usize`
+  The number of iterations in the maximin and correlations algorithms (Default: 5).
+
+- `random_state`: `u64`
+  Seed-number that controls the random draws.
+
+# Returns
+
+- `H`: `Array2<f64>`
+  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+
+# Example
+
+A 3-factor design (defaults to 3 samples):
+```rust
+lhs_classic(n=4, samples = 4, random_state=42);
+// resulting Array2:
+```
+*/
 #[allow(dead_code)]
 pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut mincorr: f32 = f32::INFINITY;
@@ -179,6 +248,37 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
 
     h_array
 }
+
+/**
+Generates a latin-hypercube design.
+
+# Parameters
+
+- `n`: `usize`
+  The number of factors to generate samples for.
+
+- `samples`: `usize`
+  The number of samples to generate for each factor (Default: `n`).
+
+- `iterations`: `usize`
+  The number of iterations in the maximin and correlations algorithms (Default: 5).
+
+- `random_state`: `u64`
+  Seed-number that controls the random draws.
+
+# Returns
+
+- `H`: `Array2<f64>`
+  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+
+# Example
+
+A 3-factor design (defaults to 3 samples):
+```rust
+lhs_classic(n=4, samples = 4, random_state=42);
+// resulting Array2:
+```
+*/
 #[allow(dead_code)]
 pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     let mut rng = SmallRng::seed_from_u64(random_state);
@@ -240,6 +340,7 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     }
     h_array
 }
+
 // ##############################################################################################################
 // ----------------------------------------------- Utilities ----------------------------------------------------
 // ##############################################################################################################
@@ -673,6 +774,7 @@ mod tests {
 
         #[test]
         fn lhs_classic_average() {
+            println!("{:?}", lhs_classic(4, 4, 42));
             let n = 13;
             let samples = 12;
 
@@ -700,31 +802,14 @@ mod tests {
         }
 
         #[test]
-        fn lhs_maximin_classic_average() {
+        fn lhs_maximin_average() {
             let n = 10;
             let samples = 15;
             let iterations = 4;
-            let centered = false;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
             for i in 0..5000 {
-                vectors.push(lhs_maximin(n, samples, i, iterations, centered));
-            }
-
-            let tolerance = 0.05;
-            assert!(test_average_value(vectors, tolerance));
-        }
-
-        #[test]
-        fn lhs_maximin_centered_average() {
-            let n = 2;
-            let samples = 2;
-            let iterations = 10;
-            let centered = true;
-
-            let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
-                vectors.push(lhs_maximin(n, samples, i, iterations, centered));
+                vectors.push(lhs_maximin(n, samples, i, iterations));
             }
 
             let tolerance = 0.05;
@@ -773,30 +858,6 @@ mod tests {
             let random_state = 42;
 
             let arr = lhs_centered(n, samples, random_state);
-
-            let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
-            cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
-
-            let a = cut.slice(s![..samples]);
-            let b = cut.slice(s![1..samples + 1]);
-            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            let sorted_center = sort_ndarray_array1(center);
-
-            for col in arr.axis_iter(Axis(1)) {
-                let sorted_col = sort_ndarray_array1(col.to_owned());
-                assert_eq!(sorted_center, sorted_col);
-            }
-        }
-
-        #[test]
-        fn lhs_maximin_centered_guarantee() {
-            let n = 14;
-            let samples = 11;
-            let iterations = 4;
-            let random_state = 42;
-            let centered = true;
-
-            let arr = lhs_maximin(n, samples, random_state, iterations, centered);
 
             let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
             cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01

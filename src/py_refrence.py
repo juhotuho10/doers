@@ -12,7 +12,7 @@ from pyDOE2.doe_lhs import lhs
 
 
 
-lhs(5, samples=2, criterion="lhsmu", random_state=10)
+arr = lhs(n=10, samples=10, iterations = 100, criterion="centermaximin", random_state=10)
 
-fullfact
+print(arr)
 
