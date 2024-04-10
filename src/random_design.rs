@@ -283,7 +283,7 @@ Each row in the input array represents a point in n-dimensional space. This func
 # Returns
 
 - `Array1<f32>`
-    A one-dimensional array of floating-point numbers, where each element is the Euclidean distance between a pair of points (rows) in the input array. 
+    A one-dimensional array of floating-point numbers, where each element is the Euclidean distance between a pair of points (rows) in the input array.
     The distances are listed in the order they were computed, which corresponds to a row-wise upper triangular traversal of the pairwise distance matrix, excluding the diagonal.
 */
 fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
@@ -304,8 +304,8 @@ fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
 /**
 Computes the Euclidean distances between each pair of the two collections of inputs.
 
-The function takes two 2-dimensional arrays, `a` and `b`, each representing a collection of points in n-dimensional space. 
-It calculates the Euclidean distance between each pair of points where one point is from `a` and the other is from `b`. 
+The function takes two 2-dimensional arrays, `a` and `b`, each representing a collection of points in n-dimensional space.
+It calculates the Euclidean distance between each pair of points where one point is from `a` and the other is from `b`.
 The result is a 2-dimensional array where the element at position (i, j) represents the distance between the i-th point in `a` and the j-th point in `b`.
 
 # Parameters
@@ -314,7 +314,7 @@ The result is a 2-dimensional array where the element at position (i, j) represe
     A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_a, dimensions_of_each_point]`.
 
 - `b`: &Array2<f32>
-    A two-dimensional array similar to `a`, where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_b, dimensions_of_each_point]`. 
+    A two-dimensional array similar to `a`, where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_b, dimensions_of_each_point]`.
     It is not required for `a` and `b` to have the same number of points (rows), but they must be in the same n-dimensional space (have the same number of columns).
 
 # Returns
@@ -538,7 +538,7 @@ fn sort_array2_by_axis_with_nan_handling(mut array: Array2<f32>) -> Array2<f32> 
 /**
 Finds the index of the minimum non-NaN value in a slice of floating-point numbers.
 
-This function iterates over a slice of `f32` values, ignoring any NaN values, and returns the index of the minimum value found. If the slice contains only NaN values or is empty, it returns `None`. 
+This function iterates over a slice of `f32` values, ignoring any NaN values, and returns the index of the minimum value found. If the slice contains only NaN values or is empty, it returns `None`.
 This is useful for data analysis tasks where NaN values represent missing data and should not be considered in minimum value calculations.
 
 # Parameters
@@ -568,12 +568,11 @@ fn argmin_ignore_nan(vec: &[f32]) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
-
 /**
 Sorts each column of a 2D array and returns an array of sorted indices.
 
-Given a 2D array of floating-point numbers, this function sorts the values in each column while handling NaN values by placing them at the end of the sorting order. 
-Instead of sorting the array itself, it returns a new 2D array where each element is the original index of the corresponding sorted element in the input array. 
+Given a 2D array of floating-point numbers, this function sorts the values in each column while handling NaN values by placing them at the end of the sorting order.
+Instead of sorting the array itself, it returns a new 2D array where each element is the original index of the corresponding sorted element in the input array.
 This is useful for tasks that require sorting data while retaining a mapping back to the original data order.
 
 # Parameters
@@ -620,19 +619,22 @@ mod tests {
     use super::*;
     use ndarray::{Array3, Zip};
 
+    // ############################ helper functions #################################################
     fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
         let mut vec = array.to_vec();
         vec.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         Array1::from(vec)
     }
 
-    fn arrays2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
+    fn arrays1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
+        // checks if all the Array1 elements are within tolerance
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
     }
 
-    fn arrays1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
+    fn arrays2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
+        // checks if all the Array2 elements are within tolerance
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
@@ -643,275 +645,196 @@ mod tests {
         stack(Axis(0), &views).expect("Error stacking arrays")
     }
 
-    #[test]
-    fn lhs_classic_1() {
-        let n = 1;
-        let samples = 1;
-        let random_state = 42;
+    // ############################ helper functions #################################################
 
-        lhs_classic(n, samples, random_state);
-    }
+    mod test_averages {
+        use super::*;
 
-    #[test]
-    fn lhs_classic_2() {
-        let n = 13;
-        let samples = 12;
+        #[test]
+        fn lhs_classic_average() {
+            let n = 13;
+            let samples = 12;
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..1000 {
-            vectors.push(lhs_classic(n, samples, i));
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_classic(n, samples, i));
+            }
+
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+
+            let center = Array2::from_elem((samples, n), 0.5);
+
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_centered_average() {
+            let n = 2;
+            let samples = 3;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_centered(n, samples, i));
+            }
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
 
-    #[test]
-    fn lhs_classic_3() {
-        let n = 6;
-        let samples = 6;
+            let center = Array2::from_elem((samples, n), 0.5);
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..1000 {
-            vectors.push(lhs_classic(n, samples, i));
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_maximin_classic_average() {
+            let n = 10;
+            let samples = 15;
+            let iterations = 4;
+            let centered = false;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_maximin(n, samples, i, iterations, centered));
+            }
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
 
-    #[test]
-    fn lhs_centered_1() {
-        let n = 2;
-        let samples = 3;
+            let center = Array2::from_elem((samples, n), 0.5);
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_centered(n, samples, i));
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_maximin_centered_average() {
+            let n = 2;
+            let samples = 2;
+            let iterations = 10;
+            let centered = true;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_maximin(n, samples, i, iterations, centered));
+            }
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
 
-    #[test]
-    fn lhs_centered_2() {
-        let n = 6;
-        let samples = 20;
-        let rand = 1;
+            let center = Array2::from_elem((samples, n), 0.5);
 
-        let arr = lhs_centered(n, samples, rand);
-
-        let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
-        cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
-
-        let a = cut.slice(s![..samples]);
-        let b = cut.slice(s![1..samples + 1]);
-        let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-        center = sort_ndarray_array1(center);
-
-        for col in arr.axis_iter(Axis(1)) {
-            assert_eq!(center, sort_ndarray_array1(col.to_owned()))
-        }
-    }
-
-    #[test]
-    fn lhs_maximin_classic_1() {
-        let n = 2;
-        let samples = 2;
-        let iterations = 4;
-        let centered = false;
-
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_maximin(n, samples, i, iterations, centered));
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_correlate_average() {
+            let n = 14;
+            let samples = 11;
+            let iterations = 5;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_correlate(n, samples, i, iterations));
+            }
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
 
-    #[test]
-    fn lhs_maximin_classic_2() {
-        let n = 10;
-        let samples = 15;
-        let iterations = 4;
-        let centered = false;
+            let center = Array2::from_elem((samples, n), 0.5);
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_maximin(n, samples, i, iterations, centered));
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_mu_average() {
+            let n = 5;
+            let samples = 6;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut vectors: Vec<Array2<f32>> = vec![];
+            for i in 0..5000 {
+                vectors.push(lhs_mu(n, samples, i));
+            }
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let collection_array = vec_array2_to_array3(vectors);
+            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
 
-    #[test]
-    fn lhs_maximin_centered_1() {
-        let n = 2;
-        let samples = 2;
-        let iterations = 10;
-        let centered = true;
+            let center = Array2::from_elem((samples, n), 0.5);
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..10000 {
-            vectors.push(lhs_maximin(n, samples, i, iterations, centered));
-        }
-
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-        let center = Array2::from_elem((samples, n), 0.5);
-
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
-
-    #[test]
-    fn lhs_maximin_centered_2() {
-        let n = 14;
-        let samples = 11;
-        let iterations = 4;
-        let centered = true;
-
-        let arr = lhs_maximin(n, samples, 42, iterations, centered);
-
-        let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
-        cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
-
-        let a = cut.slice(s![..samples]);
-        let b = cut.slice(s![1..samples + 1]);
-        let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-        center = sort_ndarray_array1(center);
-
-        for col in arr.axis_iter(Axis(1)) {
-            assert_eq!(center, sort_ndarray_array1(col.to_owned()))
+            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.1));
         }
     }
 
-    #[test]
-    fn lhs_correlate_1() {
-        let n = 2;
-        let samples = 2;
-        let iterations = 10;
+    mod test_guarantees {
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_correlate(n, samples, i, iterations));
+        use super::*;
+
+        #[test]
+        fn lhs_centered_guarantee() {
+            let n = 6;
+            let samples = 20;
+            let random_state = 42;
+
+            let arr = lhs_centered(n, samples, random_state);
+
+            let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
+            cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
+
+            let a = cut.slice(s![..samples]);
+            let b = cut.slice(s![1..samples + 1]);
+            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            center = sort_ndarray_array1(center);
+
+            for col in arr.axis_iter(Axis(1)) {
+                assert_eq!(center, sort_ndarray_array1(col.to_owned()))
+            }
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_maximin_centered_guarantee() {
+            let n = 14;
+            let samples = 11;
+            let iterations = 4;
+            let random_state = 42;
+            let centered = true;
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let arr = lhs_maximin(n, samples, random_state, iterations, centered);
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
+            cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
-    #[test]
-    fn lhs_correlate_2() {
-        let n = 13;
-        let samples = 9;
-        let iterations = 4;
+            let a = cut.slice(s![..samples]);
+            let b = cut.slice(s![1..samples + 1]);
+            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            center = sort_ndarray_array1(center);
 
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_correlate(n, samples, i, iterations));
+            for col in arr.axis_iter(Axis(1)) {
+                assert_eq!(center, sort_ndarray_array1(col.to_owned()))
+            }
         }
 
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+        #[test]
+        fn lhs_mu_guarantee() {
+            let n = 17;
+            let samples = 15;
+            let random_state = 42;
+            let arr = lhs_mu(n, samples, random_state);
 
-        let center = Array2::from_elem((samples, n), 0.5);
+            let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
+            cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
-    }
+            let a = cut.slice(s![..samples]);
+            let b = cut.slice(s![1..samples + 1]);
+            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            center = sort_ndarray_array1(center);
 
-    #[test]
-    fn lhs_mu_1() {
-        let n = 5;
-        let samples = 6;
-
-        let mut vectors: Vec<Array2<f32>> = vec![];
-        for i in 0..5000 {
-            vectors.push(lhs_mu(n, samples, i));
-        }
-
-        let collection_array = vec_array2_to_array3(vectors);
-        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-        let center = Array2::from_elem((samples, n), 0.5);
-
-        assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.1));
-    }
-
-    #[test]
-    fn lhs_mu_2() {
-        let n = 5;
-        let samples = 5;
-
-        let arr = lhs_mu(n, samples, 42);
-
-        let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
-        cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
-
-        let a = cut.slice(s![..samples]);
-        let b = cut.slice(s![1..samples + 1]);
-        let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-        center = sort_ndarray_array1(center);
-
-        for col in arr.axis_iter(Axis(1)) {
-            let sorted_col = sort_ndarray_array1(col.to_owned());
-            assert!(arrays1_are_close(
-                &center,
-                &sorted_col,
-                0.5 / (samples as f32)
-            ));
-        }
-    }
-
-    #[test]
-    fn lhs_mu_3() {
-        let n = 17;
-        let samples = 15;
-
-        let arr = lhs_mu(n, samples, 42);
-
-        let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
-        cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
-
-        let a = cut.slice(s![..samples]);
-        let b = cut.slice(s![1..samples + 1]);
-        let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-        center = sort_ndarray_array1(center);
-
-        for col in arr.axis_iter(Axis(1)) {
-            let sorted_col = sort_ndarray_array1(col.to_owned());
-            assert!(arrays1_are_close(
-                &center,
-                &sorted_col,
-                0.5 / (samples as f32)
-            ));
+            for col in arr.axis_iter(Axis(1)) {
+                let sorted_col = sort_ndarray_array1(col.to_owned());
+                assert!(arrays1_are_close(
+                    &center,
+                    &sorted_col,
+                    0.5 / (samples as f32)
+                ));
+            }
         }
     }
 }
