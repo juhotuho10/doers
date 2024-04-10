@@ -45,7 +45,7 @@ let example_array = lhs_classic(n, samples, random_state);
 
 None. But columns tend to be equally spaced since in the case of samples = 4
 Array1s with uniform distribution are scaled with  another array: [0.25, 0.5, 0.75, 1]
-and then shuffled suffled
+and then shuffled
 */
 #[allow(dead_code)]
 pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
@@ -61,12 +61,9 @@ pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     let b = cut.slice(s![1..samples + 1]);
     let mut h_array: Array2<f32> = Array::zeros(array_shape);
 
-    println!("{}", (&b - &a) + a);
-
     for i in 0..n {
         let mut mutable = h_array.slice_mut(s![i, ..]);
         let u_slice = u.slice(s![i, ..]);
-        //println!("{}", (&b - &a) + a);
         let assignable = &u_slice * (&b - &a) + a;
         mutable.assign(&assignable);
     }
@@ -82,7 +79,7 @@ pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
 }
 
 /**
-Generates a latin-hypercube design.
+Generates a latin-hypercube design with equal spacing between each value.
 
 # Parameters
 
@@ -90,26 +87,37 @@ Generates a latin-hypercube design.
   The number of factors to generate samples for.
 
 - `samples`: `usize`
-  The number of samples to generate for each factor (Default: `n`).
-
-- `iterations`: `usize`
-  The number of iterations in the maximin and correlations algorithms (Default: 5).
+  The number of samples to generate for each factor.
 
 - `random_state`: `u64`
   Seed-number that controls the random draws.
 
 # Returns
 
-- `H`: `Array2<f64>`
-  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+- `H`: `Array2<f32>`
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
 # Example
 
-A 3-factor design (defaults to 3 samples):
+A 4-sample design:
 ```rust
-lhs_classic(n=4, samples = 4, random_state=42);
+let n = 4;
+let samples = 4;
+let random_state = 42;
+let example_array = lhs_centered(n, samples, random_state);
 // resulting Array2:
+// [[0.125, 0.625, 0.875, 0.375],
+//  [0.875, 0.125, 0.375, 0.125],
+//  [0.625, 0.375, 0.125, 0.875],
+//  [0.375, 0.875, 0.625, 0.625]]
 ```
+
+# Guarantees
+
+guaranteed to be equally spaced, startin from 0.5/`samples` and jumping 1/`samples` per sample
+
+in case of `samples` = 4
+starting from 0.125 and continuing in 0.25 steps
 */
 #[allow(dead_code)]
 pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
@@ -137,7 +145,7 @@ pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> 
 }
 
 /**
-Generates a latin-hypercube design.
+Generates and iterates over classic latin-hypercube design to make it more equally spaced.
 
 # Parameters
 
@@ -145,26 +153,38 @@ Generates a latin-hypercube design.
   The number of factors to generate samples for.
 
 - `samples`: `usize`
-  The number of samples to generate for each factor (Default: `n`).
-
-- `iterations`: `usize`
-  The number of iterations in the maximin and correlations algorithms (Default: 5).
+  The number of samples to generate for each factor.
 
 - `random_state`: `u64`
   Seed-number that controls the random draws.
 
+- `iterations`: `u16`
+  The number of iterations the function tries to maximize the distances.
+
 # Returns
 
-- `H`: `Array2<f64>`
-  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+- `H`: `Array2<f32>`
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
 # Example
 
-A 3-factor design (defaults to 3 samples):
+A 4-sample design:
 ```rust
-lhs_classic(n=4, samples = 4, random_state=42);
+let n = 4;
+let samples = 4;
+let random_state = 42;
+let iterations = 100;
+let example_array = lhs_maximin(n, samples, random_state, iterations);
 // resulting Array2:
+// [[0.87440515, 0.4860021,  0.87007785,  0.43068066],
+//  [0.40560502, 0.0374375,  0.3437121,   0.73863614],
+//  [0.70085746, 0.63299274, 0.022075802, 0.23332724],
+//  [0.07169747, 0.93537205, 0.69658417,  0.87581944]]
 ```
+
+# Guarantees
+
+None. But columns tend to be equally spaced since that is what the function tries to iterate over
 */
 #[allow(dead_code)]
 pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
@@ -178,6 +198,7 @@ pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16)
 
         let h_candidate = lhs_classic(n, samples, random_int);
 
+        // TODO: pairwise_euclidean_dist probably wrongly implemented, needs testing
         let dist_array = pairwise_euclidean_dist(&h_candidate).to_owned();
 
         // Assuming implementation for pairwise_euclidean_dist provided elsewhere
@@ -194,7 +215,7 @@ pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16)
 }
 
 /**
-Generates a latin-hypercube design.
+Generates and iterates over classic latin-hypercube design to make it less correlated.
 
 # Parameters
 
@@ -202,26 +223,37 @@ Generates a latin-hypercube design.
   The number of factors to generate samples for.
 
 - `samples`: `usize`
-  The number of samples to generate for each factor (Default: `n`).
-
-- `iterations`: `usize`
-  The number of iterations in the maximin and correlations algorithms (Default: 5).
+  The number of samples to generate for each factor.
 
 - `random_state`: `u64`
   Seed-number that controls the random draws.
 
+- `iterations`: `u16`
+  The number of iterations the function tries to maximize the distances.
+
 # Returns
 
-- `H`: `Array2<f64>`
-  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+- `H`: `Array2<f32>`
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
 # Example
 
-A 3-factor design (defaults to 3 samples):
+A 4-sample design:
 ```rust
-lhs_classic(n=4, samples = 4, random_state=42);
+let n = 4;
+let samples = 4;
+let random_state = 42;
+let example_array = lhs_correlate(n, samples, random_state, iterations);
 // resulting Array2:
+// [[0.0793857,  0.6603068,   0.4616545,  0.03551933],
+//  [0.49591884, 0.93893766,  0.8617085,  0.5154473],
+//  [0.6710943,  0.075240016, 0.63285625, 0.9130845],
+//  [0.89382416, 0.40597996,  0.14301169, 0.4802417]]
 ```
+
+# Guarantees
+
+None. Tries to aim at the design being more chaotic since the correlation of the design is minimized through iteration
 */
 #[allow(dead_code)]
 pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
@@ -250,7 +282,7 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
 }
 
 /**
-Generates a latin-hypercube design.
+Generates a classic latin-hypercube design.
 
 # Parameters
 
@@ -258,26 +290,36 @@ Generates a latin-hypercube design.
   The number of factors to generate samples for.
 
 - `samples`: `usize`
-  The number of samples to generate for each factor (Default: `n`).
-
-- `iterations`: `usize`
-  The number of iterations in the maximin and correlations algorithms (Default: 5).
+  The number of samples to generate for each factor.
 
 - `random_state`: `u64`
   Seed-number that controls the random draws.
 
 # Returns
 
-- `H`: `Array2<f64>`
-  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
+- `H`: `Array2<f32>`
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
 # Example
 
-A 3-factor design (defaults to 3 samples):
+A 4-sample design:
 ```rust
-lhs_classic(n=4, samples = 4, random_state=42);
+let n = 4;
+let samples = 4;
+let random_state = 42;
+let example_array = lhs_mu(n, samples, random_state);
 // resulting Array2:
+// [[0.6042977,   0.48937836, 0.7415293,  0.5962739],
+//  [0.097561955, 0.71106726, 0.15533936, 0.48371363],
+//  [0.8184801,   0.04350221, 0.41811958, 0.8805161],
+//  [0.42012796,  0.90002126, 0.8194874,  0.15655315]]
 ```
+
+# Guarantees
+
+Guarantees that in every column, there is a random value in equally spaced 1/samples sized ranges
+
+In the case of samples = 4, there will be a value between 0.0 - 0.25, another between 0.25 - 0.5 etc. and the ranges have uniform distribution
 */
 #[allow(dead_code)]
 pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
@@ -774,7 +816,6 @@ mod tests {
 
         #[test]
         fn lhs_classic_average() {
-            println!("{:?}", lhs_classic(4, 4, 42));
             let n = 13;
             let samples = 12;
 
