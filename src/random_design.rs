@@ -15,7 +15,6 @@ Generates a latin-hypercube design.
 - `n`: `usize`
   The number of factors to generate samples for.
 
-# Optional
 
 - `samples`: `usize`
   The number of samples to generate for each factor (Default: `n`).
@@ -645,10 +644,32 @@ mod tests {
         stack(Axis(0), &views).expect("Error stacking arrays")
     }
 
+    fn test_average_value(vectors: Vec<Array2<f32>>, tolerance: f32) -> bool {
+        // takes a vector of Array2<f32>
+        let collection_array = vec_array2_to_array3(vectors);
+
+        // get the average Array2<f32>
+        let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
+
+        let shape_arr = avg_array.shape();
+
+        let samples = shape_arr[0];
+        let n = shape_arr[1];
+
+        // make Array2 of the same size with 0.5 elements
+        let center = Array2::from_elem((samples, n), 0.5);
+
+        // make sure that the Array2s are close to eachother
+        arrays2_are_close(&center, &avg_array.to_owned(), tolerance)
+    }
+
     // ############################ helper functions #################################################
 
     mod test_averages {
         use super::*;
+
+        // makes sure that after enough iteration, all the values in the arrays settle close to 0.5 as an average
+        // so that the fuctions arent biased in the long run
 
         #[test]
         fn lhs_classic_average() {
@@ -660,12 +681,8 @@ mod tests {
                 vectors.push(lhs_classic(n, samples, i));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
+            let tolerance = 0.05;
+            assert!(test_average_value(vectors, tolerance));
         }
 
         #[test]
@@ -678,12 +695,8 @@ mod tests {
                 vectors.push(lhs_centered(n, samples, i));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
+            let tolerance = 0.05;
+            assert!(test_average_value(vectors, tolerance));
         }
 
         #[test]
@@ -698,12 +711,8 @@ mod tests {
                 vectors.push(lhs_maximin(n, samples, i, iterations, centered));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
+            let tolerance = 0.05;
+            assert!(test_average_value(vectors, tolerance));
         }
 
         #[test]
@@ -718,12 +727,8 @@ mod tests {
                 vectors.push(lhs_maximin(n, samples, i, iterations, centered));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
+            let tolerance = 0.05;
+            assert!(test_average_value(vectors, tolerance));
         }
 
         #[test]
@@ -737,12 +742,8 @@ mod tests {
                 vectors.push(lhs_correlate(n, samples, i, iterations));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.05));
+            let tolerance = 0.05;
+            assert!(test_average_value(vectors, tolerance));
         }
 
         #[test]
@@ -755,18 +756,15 @@ mod tests {
                 vectors.push(lhs_mu(n, samples, i));
             }
 
-            let collection_array = vec_array2_to_array3(vectors);
-            let avg_array = collection_array.mean_axis(Axis(0)).unwrap();
-
-            let center = Array2::from_elem((samples, n), 0.5);
-
-            assert!(arrays2_are_close(&center, &avg_array.to_owned(), 0.1));
+            let tolerance = 0.1;
+            assert!(test_average_value(vectors, tolerance));
         }
     }
 
     mod test_guarantees {
-
         use super::*;
+
+        // makes sure that some guarantees that the functions offer are indeed kept
 
         #[test]
         fn lhs_centered_guarantee() {
