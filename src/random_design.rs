@@ -618,21 +618,21 @@ mod tests {
     use super::*;
     use ndarray::{Array3, Zip};
 
-    // ############################ helper functions #################################################
+    // ######################################### helper functions ######################################
     fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
         let mut vec = array.to_vec();
         vec.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         Array1::from(vec)
     }
 
-    fn arrays1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
+    fn array1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
         // checks if all the Array1 elements are within tolerance
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
     }
 
-    fn arrays2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
+    fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
         // checks if all the Array2 elements are within tolerance
         Zip::from(a)
             .and(b)
@@ -660,10 +660,10 @@ mod tests {
         let center = Array2::from_elem((samples, n), 0.5);
 
         // make sure that the Array2s are close to eachother
-        arrays2_are_close(&center, &avg_array.to_owned(), tolerance)
+        array2_are_close(&center, &avg_array.to_owned(), tolerance)
     }
 
-    // ############################ helper functions #################################################
+    // ######################################### tests #################################################
 
     mod test_averages {
         use super::*;
@@ -779,11 +779,12 @@ mod tests {
 
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..samples + 1]);
-            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            center = sort_ndarray_array1(center);
+            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            let sorted_center = sort_ndarray_array1(center);
 
             for col in arr.axis_iter(Axis(1)) {
-                assert_eq!(center, sort_ndarray_array1(col.to_owned()))
+                let sorted_col = sort_ndarray_array1(col.to_owned());
+                assert_eq!(sorted_center, sorted_col);
             }
         }
 
@@ -802,11 +803,12 @@ mod tests {
 
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..samples + 1]);
-            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            center = sort_ndarray_array1(center);
+            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            let sorted_center = sort_ndarray_array1(center);
 
             for col in arr.axis_iter(Axis(1)) {
-                assert_eq!(center, sort_ndarray_array1(col.to_owned()))
+                let sorted_col = sort_ndarray_array1(col.to_owned());
+                assert_eq!(sorted_center, sorted_col);
             }
         }
 
@@ -827,7 +829,7 @@ mod tests {
 
             for col in arr.axis_iter(Axis(1)) {
                 let sorted_col = sort_ndarray_array1(col.to_owned());
-                assert!(arrays1_are_close(
+                assert!(array1_are_close(
                     &center,
                     &sorted_col,
                     0.5 / (samples as f32)
