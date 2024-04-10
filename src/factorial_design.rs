@@ -2,6 +2,62 @@ use itertools::Itertools;
 use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayViewMut1, Axis};
 use std::vec;
 
+/**
+Creates a general full-factorial design.
+
+# Parameters
+
+- `levels`: Vec<u16>
+  A vector indicating the number of levels for each input design factor.
+  Each element in the vector represents a different factor and specifies how many levels that factor has.
+
+# Returns
+
+- `mat`: Result<Array2<u16>, String>
+  Returns a design matrix with coded levels ranging from 0 to `k-1` for a `k`-level factor.
+  The matrix represents all possible combinations of the levels across all factors.
+
+# Errors
+
+- Returns an error string if any of the following conditions are met:
+  - Any value in the `levels` vector is `0`, as a factor cannot have zero levels.
+  - The cumulative product of the `levels` values exceeds `usize::MAX`, indicating the resulting matrix would be too large to handle.
+
+# Example
+
+Generate a full-factorial design for three factors with 2, 4, and 3 levels respectively:
+
+```rust
+// fullfact(vec![2, 4, 3]);
+//
+// Expected output:
+// Array2([[ 0,  0,  0],
+//         [ 1,  0,  0],
+//         [ 0,  1,  0],
+//         [ 1,  1,  0],
+//         [ 0,  2,  0],
+//         [ 1,  2,  0],
+//         [ 0,  3,  0],
+//         [ 1,  3,  0],
+//         [ 0,  0,  1],
+//         [ 1,  0,  1],
+//         [ 0,  1,  1],
+//         [ 1,  1,  1],
+//         [ 0,  2,  1],
+//         [ 1,  2,  1],
+//         [ 0,  3,  1],
+//         [ 1,  3,  1],
+//         [ 0,  0,  2],
+//         [ 1,  0,  2],
+//         [ 0,  1,  2],
+//         [ 1,  1,  2],
+//         [ 0,  2,  2],
+//         [ 1,  2,  2],
+//         [ 0,  3,  2],
+//         [ 1,  3,  2]]);
+```
+ */
+
 pub fn fullfact(levels: Vec<u16>) -> Result<Array2<u16>, String> {
     let n = levels.len();
     let num_lines: u64 = levels.iter().map(|&level| level as u64).product();
@@ -61,7 +117,7 @@ Creates a 2-Level full-factorial design.
 Generate a full-factorial design for 3 factors:
 
 ```rust
-let design = ff2n(3);
+// ff2n(3);
 // This would output a matrix similar to:
 // array([[-1., -1., -1.],
 //        [ 1., -1., -1.],
@@ -89,50 +145,50 @@ pub fn ff2n(n: usize) -> Result<Array2<i32>, String> {
 }
 
 /**
-Generate a Plackett-Burman design
+Generates a Plackett-Burman design.
 
-Parameter
----------
-n : int
-    The number of factors to create a matrix for.
+# Parameter
 
-Returns
--------
-H : 2d-array
-    An orthogonal design matrix with n columns, one for each factor, and
-    the number of rows being the next multiple of 4 higher than n (e.g.,
-    for 1-3 factors there are 4 rows, for 4-7 factors there are 8 rows,
-    etc.)
+- `n`: u32
+  The number of factors for which to create a matrix.
 
-# Raises
+# Returns
 
-- `ValueError`
-If input is valid or if design construction fails. The design can fail
-if `reduction` is too large compared to values of `levels`.
+- `H`: Array2<i32>
+  Returns an orthogonal design matrix with `n` columns, one for each factor. The number of rows is the next multiple of 4 higher than `n`. For example, for 1-3 factors, there are 4 rows; for 4-7 factors, there are 8 rows, etc.
 
-Example
--------
+# Errors
 
-A 3-factor design::
+- Raises a `ValueError` if:
+  - The input is valid, or if the design construction fails. The design can fail if `reduction` is too large compared to the values of `levels`. Note: It seems there might be a typo in the original text regarding `reduction` and `levels` since they are not parameters of this function. It's possible this section was mistakenly included from another function's documentation.
 
-    >>> pbdesign(3)
-    array([[-1., -1.,  1.],
-            [ 1., -1., -1.],
-            [-1.,  1., -1.],
-            [ 1.,  1.,  1.]])
+# Examples
 
-A 5-factor design::
+Generate a design for 3 factors:
 
-    >>> pbdesign(5)
-    array([[-1., -1.,  1., -1.,  1.],
-            [ 1., -1., -1., -1., -1.],
-            [-1.,  1., -1., -1.,  1.],
-            [ 1.,  1.,  1., -1., -1.],
-            [-1., -1.,  1.,  1., -1.],
-            [ 1., -1., -1.,  1.,  1.],
-            [-1.,  1., -1.,  1., -1.],
-            [ 1.,  1.,  1.,  1.,  1.]])
-     */
+```rust
+// pbdesign(3);
+// Expected output:
+// array([[-1, -1,  1],
+//        [ 1, -1, -1],
+//        [-1,  1, -1],
+//        [ 1,  1,  1]])
+```
+Generate a design for 5 factors:
+```
+// pbdesign(5);
+// Expected output:
+// array([[-1, -1,  1, -1,  1],
+//        [ 1, -1, -1, -1, -1],
+//        [-1,  1, -1, -1,  1],
+//        [ 1,  1,  1, -1, -1],
+//        [-1, -1,  1,  1, -1],
+//        [ 1, -1, -1,  1,  1],
+//        [-1,  1, -1,  1, -1],
+//        [ 1,  1,  1,  1,  1]])
+```
+*/
+
 #[allow(dead_code)]
 pub fn pbdesign(n: u32) -> Array2<i32> {
     let keep = n as usize;
@@ -250,7 +306,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  six levels respectively reduced with a factor of 4:
 
  ```
- gsd([3, 4, 6], 4)
+ // gsd([3, 4, 6], 4)
  // Outputs:
  // array([[0, 0, 0],
  //        [0, 0, 4],
@@ -262,7 +318,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  four levels reduced with a factor of 2:
 
  ```
- gsd([3, 4], 2, n=2)[0]
+ //  gsd([3, 4], 2, n=2)[0]
  // Outputs:
  // array([[0, 0],
  //        [0, 2],
@@ -271,7 +327,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  ```
 
  ```
- gsd([3, 4], 2, n=2)[1]
+ //  gsd([3, 4], 2, n=2)[1]
  // Outputs:
  // array([[0, 1],
  //        [0, 3],
@@ -282,7 +338,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  If the design fails a ValueError is raised:
 
  ```
- gsd([2, 3], 5)
+ // gsd([2, 3], 5)
  // Raises ValueError: reduction too large compared to factor levels
  ```
 
@@ -434,6 +490,20 @@ fn map_partitions_to_design(
 // -------------------------------------------------- Utils -----------------------------------------------------
 // ##############################################################################################################
 
+/**
+Decomposes each element in a floating-point array into its mantissa and exponent.
+
+# Parameters
+
+- `arr`: &Array1<f32>
+    A one-dimensional array of floating-point numbers from which to decompose mantissas and exponents.
+
+# Returns
+
+- `(Array1<f32>, Array1<i32>)`
+    A tuple containing two arrays. The first array contains the mantissas of the original array's elements, and the second array contains the corresponding exponents.
+    Each mantissa is a floating-point number in the range of 0.5 (inclusive) to 1.0 (exclusive) or 0 if the original number is 0. The exponent is an integer such that `original_number = mantissa * 2^exponent`.
+*/
 fn frexp(arr: &Array1<f32>) -> (Array1<f32>, Array1<i32>) {
     let mantissas = arr.mapv(|x| {
         if x == 0.0 {
@@ -461,6 +531,25 @@ fn frexp(arr: &Array1<f32>) -> (Array1<f32>, Array1<i32>) {
     (mantissas, exponents)
 }
 
+/**
+Constructs a Toeplitz matrix given the first column and the first row.
+
+A Toeplitz matrix is a matrix in which each descending diagonal from left to right is constant.
+
+# Parameters
+
+- `c`: &[i32]
+    A slice of `i32` representing the first column of the Toeplitz matrix. This determines the values along the columns of the matrix starting from the top-left corner.
+
+- `r`: &[i32]
+    A slice of `i32` representing the first row of the Toeplitz matrix. This determines the values along the rows of the matrix starting from the top-left corner.
+    The first element of `r` is used to set the top-left value of the matrix but is otherwise ignored if `c` also provides a value for that position.
+
+# Returns
+
+- `Array2<i32>`
+    Returns a two-dimensional array of shape `(c.len(), r.len())` representing the Toeplitz matrix constructed from `c` and `r`.
+*/
 fn toeplitz(c: &[i32], r: &[i32]) -> Array2<i32> {
     let c_len = c.len();
     let r_len = r.len();
@@ -477,6 +566,26 @@ fn toeplitz(c: &[i32], r: &[i32]) -> Array2<i32> {
     new_vec
 }
 
+/**
+Constructs a Hankel matrix given the first column and the last row.
+
+A Hankel matrix is a matrix in which each ascending diagonal from left to right is constant.
+
+# Parameters
+
+- `c`: &[i32]
+    A slice of `i32` representing the first column of the Hankel matrix. This slice determines the values along the first column, starting from the top-left corner.
+
+- `r`: &[i32]
+    A slice of `i32` representing the last row of the Hankel matrix. This slice determines the values along the last row, starting from the top-right corner.
+    The first element of `r` is ignored if `c` also provides a value for the top-right position; otherwise, it serves to connect the first column and the last row into a consistent Hankel structure.
+
+# Returns
+
+- `Array2<i32>`
+    Returns a two-dimensional array of shape `(c.len(), c.len().max(r.len()))` representing the Hankel matrix constructed from `c` and `r`.
+    The matrix is filled such that each ascending diagonal from left to right is constant, based on the values provided in `c` and `r`.
+*/
 fn hankel(c: &[i32], r: &[i32]) -> Array2<i32> {
     let c_len = c.len();
     let r_len = r.len();
@@ -508,7 +617,7 @@ fn hankel(c: &[i32], r: &[i32]) -> Array2<i32> {
 
 #[cfg(test)]
 mod tests {
-    // Import the outer module to use the function to be tested.
+    // Testing the functions with a known output
     use super::*;
     use ndarray::arr2;
 

@@ -2,42 +2,44 @@ use ndarray::{concatenate, s, Array, Array2, Axis};
 use std::{cmp::max, vec};
 
 /**
-Create a Box-Behnken design
+Creates a Box-Behnken design.
 
-Parameters
-----------
-n : usize
-    The number of factors in the design
---------
-center : usize
-    The number of center points to include (default = 1).
+# Parameters
 
-Returns
--------
-mat : 2d-array
-    The design matrix
+- `n`: `usize`
+  The number of factors in the design.
 
-Example
--------
-::
+- `center`: `usize`
+  The number of center points to include. Defaults to 1 if not specified.
 
-    >>> bbdesign(3, 3)
-    array([[-1., -1.,  0.],
-            [ 1., -1.,  0.],
-            [-1.,  1.,  0.],
-            [ 1.,  1.,  0.],
-            [-1.,  0., -1.],
-            [ 1.,  0., -1.],
-            [-1.,  0.,  1.],
-            [ 1.,  0.,  1.],
-            [ 0., -1., -1.],
-            [ 0.,  1., -1.],
-            [ 0., -1.,  1.],
-            [ 0.,  1.,  1.],
-            [ 0.,  0.,  0.],
-            [ 0.,  0.,  0.],
-            [ 0.,  0.,  0.]])
+# Returns
 
+- `mat`: `Array2<i32>`
+  Returns the design matrix. This matrix includes all combinations of levels for each factor specified by `n`, alongside the specified number of center points.
+
+# Example
+
+Generate a Box-Behnken design for 3 factors with 3 center points:
+
+```rust
+// bbdesign(3, Some(3));
+// Expected output:
+// array([[-1.0, -1.0,  0.0],
+//        [ 1.0, -1.0,  0.0],
+//        [-1.0,  1.0,  0.0],
+//        [ 1.0,  1.0,  0.0],
+//        [-1.0,  0.0, -1.0],
+//        [ 1.0,  0.0, -1.0],
+//        [-1.0,  0.0,  1.0],
+//        [ 1.0,  0.0,  1.0],
+//        [ 0.0, -1.0, -1.0],
+//        [ 0.0,  1.0, -1.0],
+//        [ 0.0, -1.0,  1.0],
+//        [ 0.0,  1.0,  1.0],
+//        [ 0.0,  0.0,  0.0],
+//        [ 0.0,  0.0,  0.0],
+//        [ 0.0,  0.0,  0.0]])
+```
 */
 #[allow(dead_code)]
 pub fn bbdesign_center(n: usize, center: usize) -> Array2<i32> {
@@ -53,39 +55,41 @@ pub fn bbdesign_center(n: usize, center: usize) -> Array2<i32> {
 }
 
 /**
-Create a Box-Behnken design
+Generates a Box-Behnken design.
 
-Parameters
-----------
-n : int
-    The number of factors in the design
+# Parameters
 
-Returns
--------
-mat : 2d-array
-    The design matrix
+- `n`: `usize`
+  The number of factors in the design. This value determines the complexity of the design matrix generated.
 
-Example
--------
-::
+# Returns
 
-    >>> bbdesign(3)
-    array([[-1., -1.,  0.],
-            [ 1., -1.,  0.],
-            [-1.,  1.,  0.],
-            [ 1.,  1.,  0.],
-            [-1.,  0., -1.],
-            [ 1.,  0., -1.],
-            [-1.,  0.,  1.],
-            [ 1.,  0.,  1.],
-            [ 0., -1., -1.],
-            [ 0.,  1., -1.],
-            [ 0., -1.,  1.],
-            [ 0.,  1.,  1.],
-            [ 0.,  0.,  0.],
-            [ 0.,  0.,  0.],
-            [ 0.,  0.,  0.]])
+- `mat`: `Array2<f64>`
+  Returns the design matrix as a 2D array. The matrix represents the Box-Behnken design for the specified number of factors, with levels coded as -1, 0, and 1. The design includes all combinations of two levels at a time, with the third factor set to 0, and additional center points.
 
+# Example
+
+Generate a Box-Behnken design for 3 factors:
+
+```rust
+// bbdesign(3);
+// Expected output:
+// array([[-1.0, -1.0,  0.0],
+//        [ 1.0, -1.0,  0.0],
+//        [-1.0,  1.0,  0.0],
+//        [ 1.0,  1.0,  0.0],
+//        [-1.0,  0.0, -1.0],
+//        [ 1.0,  0.0, -1.0],
+//        [-1.0,  0.0,  1.0],
+//        [ 1.0,  0.0,  1.0],
+//        [ 0.0, -1.0, -1.0],
+//        [ 0.0,  1.0, -1.0],
+//        [ 0.0, -1.0,  1.0],
+//        [ 0.0,  1.0,  1.0],
+//        [ 0.0,  0.0,  0.0],
+//        [ 0.0,  0.0,  0.0],
+//        [ 0.0,  0.0,  0.0]])
+```
 */
 #[allow(dead_code)]
 pub fn bbdesign(n: usize) -> Array2<i32> {
@@ -102,15 +106,10 @@ pub fn bbdesign(n: usize) -> Array2<i32> {
     h_array
 }
 
+/// computation algorithm for bbdesign
 fn bb_algorithm(n: usize) -> Array2<i32> {
-    //First, compute a factorial DOE with 2 parameters
     let h_fact = super::factorial_design::ff2n(2).unwrap(); // we know this to be valid
 
-    // Now we populate the real DOE with this DOE
-
-    // We made a factorial design on each pair of dimensions
-    // - So, we created a factorial design with two factors
-    // - Make two loops
     let nb_lines = (n * (n - 1) / 2) * h_fact.shape()[0];
     let mut h_array = Array2::<i32>::zeros((nb_lines, n));
     let mut index = 0;
@@ -130,91 +129,67 @@ fn bb_algorithm(n: usize) -> Array2<i32> {
 }
 
 /**
-Central composite design
+Generates a Central Composite Design (CCD).
 
-Parameters
-----------
-n : int
-    The number of factors in the design.
+# Parameters
 
-Optional
---------
-center : int array
-    A 1-by-2 array of integers, the number of center points in each block
-    of the design. (Default: (4, 4)).
-alpha : str
-    A string describing the effect of alpha has on the variance. ``alpha``
-    can take on the following values:
+- `n`: `usize`
+  The number of factors in the design.
 
-    1. 'orthogonal' or 'o' (Default)
+# Optional Parameters
 
-    2. 'rotatable' or 'r'
+- `center`: `Vec<u32>`
+  A vector of two integers representing the number of center points in each block of the design. Defaults to `[4, 4]`.
 
-face : str
-    The relation between the start points and the corner (factorial) points.
-    There are three options for this input:
+- `alpha`: `O&str`
+  Specifies the effect of alpha on the variance. Possible values are:
+  - `"orthogonal"`.
+  - `"rotatable"`.
 
-    1. 'circumscribed' or 'ccc': This is the original form of the central
-        composite design. The star points are at some distance ``alpha``
-        from the center, based on the properties desired for the design.
-        The start points establish new extremes for the low and high
-        settings for all factors. These designs have circular, spherical,
-        or hyperspherical symmetry and require 5 levels for each factor.
-        Augmenting an existing factorial or resolution V fractional
-        factorial design with star points can produce this design.
+- `face`: `&str`
+  Describes the relation between the start points and the corner (factorial) points. Options are:
+  - `"circumscribed"``: Original form with star points at a distance `alpha` from the center.
+  - `"inscribed"`: Factor settings are the star points, creating a design within those limits.
+  - `"faced"`: Star points are at the center of each face of the factorial space, requiring 3 levels of each factor.
 
-    2. 'inscribed' or 'cci': For those situations in which the limits
-        specified for factor settings are truly limits, the CCI design
-        uses the factors settings as the star points and creates a factorial
-        or fractional factorial design within those limits (in other words,
-        a CCI design is a scaled down CCC design with each factor level of
-        the CCC design divided by ``alpha`` to generate the CCI design).
-        This design also requires 5 levels of each factor.
+# Returns
 
-    3. 'faced' or 'ccf': In this design, the star points are at the center
-        of each face of the factorial space, so ``alpha`` = 1. This
-        variety requires 3 levels of each factor. Augmenting an existing
-        factorial or resolution V design with appropriate star points can
-        also produce this design.
+- `mat`: `Result<Array2<f32>, String>`
+  The design matrix with coded levels -1 and 1, representing the various combinations of the factors according to the CCD specifications.
 
-Notes
------
-- Fractional factorial designs are not (yet) available here.
-- 'ccc' and 'cci' can be rotatable design, but 'ccf' cannot.
+# Errors
 
-Returns
--------
-mat : 2d-array
-    The design matrix with coded levels -1 and 1
+- Returns a error string if invalid `alpha` or `face` strings are provided
 
-Example
--------
-::
+# Example
 
-    >>> ccdesign(3)
-    array([[-1.        , -1.        , -1.        ],
-            [ 1.        , -1.        , -1.        ],
-            [-1.        ,  1.        , -1.        ],
-            [ 1.        ,  1.        , -1.        ],
-            [-1.        , -1.        ,  1.        ],
-            [ 1.        , -1.        ,  1.        ],
-            [-1.        ,  1.        ,  1.        ],
-            [ 1.        ,  1.        ,  1.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [-1.82574186,  0.        ,  0.        ],
-            [ 1.82574186,  0.        ,  0.        ],
-            [ 0.        , -1.82574186,  0.        ],
-            [ 0.        ,  1.82574186,  0.        ],
-            [ 0.        ,  0.        , -1.82574186],
-            [ 0.        ,  0.        ,  1.82574186],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ],
-            [ 0.        ,  0.        ,  0.        ]])
-
+Generate a CCD for 3 factors:
+```rust
+///ccdesign(3, None, None, None);
+// Expected output:
+//    Array2([[-1.        , -1.        , -1.        ],
+//            [ 1.        , -1.        , -1.        ],
+//            [-1.        ,  1.        , -1.        ],
+//            [ 1.        ,  1.        , -1.        ],
+//            [-1.        , -1.        ,  1.        ],
+//            [ 1.        , -1.        ,  1.        ],
+//            [-1.        ,  1.        ,  1.        ],
+//            [ 1.        ,  1.        ,  1.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [-1.82574186,  0.        ,  0.        ],
+//            [ 1.82574186,  0.        ,  0.        ],
+//            [ 0.        , -1.82574186,  0.        ],
+//            [ 0.        ,  1.82574186,  0.        ],
+//            [ 0.        ,  0.        , -1.82574186],
+//            [ 0.        ,  0.        ,  1.82574186],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ],
+//            [ 0.        ,  0.        ,  0.        ]])
+```
 */
 #[allow(dead_code)]
 pub fn ccdesign(
@@ -282,41 +257,52 @@ pub fn ccdesign(
 }
 
 /**
-Create the star points of various design matrices
+Generates the star points for various design matrices.
 
-Parameters
-----------
-n : int
-    The number of variables in the design
+# Parameters
 
-Optional
---------
-alpha : str
-    Available values are 'faced' (default), 'orthogonal', or 'rotatable'
-center : array
-    A 1-by-2 array of integers indicating the number of center points
-    assigned in each block of the response surface design. Default is
-    (1, 1).
+- `n`: `usize`
+  The number of variables in the design.
 
-Returns
--------
-H : 2d-array
-    The star-point portion of the design matrix (i.e. at +/- alpha)
-a : scalar
-    The alpha value to scale the star points with.
+# Optional Parameters
 
-Example
--------
-::
+- `alpha`: `&str`
+  Specifies the scaling of the star points. Available options include:
+  - `"faced"`: Default. Star points are placed at the center of each face of the factorial space.
+  - `"orthogonal"`: Star points are placed to preserve orthogonality.
+  - `"rotatable"`: Star points are placed to achieve rotatability of the design.
 
-    >>> star(3)
-    array([[-1.,  0.,  0.],
-            [ 1.,  0.,  0.],
-            [ 0., -1.,  0.],
-            [ 0.,  1.,  0.],
-            [ 0.,  0., -1.],
-            [ 0.,  0.,  1.]])
+- `center`: `Vec<u32>`
+  A vector containing two integers that indicate the number of center points assigned in each block of the response surface design. Defaults to `[1, 1]`.
 
+# Returns
+
+- `Result<(Array2<f32>, f32), String>`
+
+- `Array2<f32>` : `H`
+  The star-point portion of the design matrix, positioned at `+/- alpha`.
+
+- `f32` : `a`
+  The alpha value used to scale the star points.
+
+
+# Error
+- Returns a error string if alpha string isn't correct
+
+# Example
+
+Generate star points for a 3-variable design:
+
+```rust
+// star(3, None, None);
+// Expected output for H (design matrix):
+// array([[-1.0,  0.0,  0.0],
+//        [ 1.0,  0.0,  0.0],
+//        [ 0.0, -1.0,  0.0],
+//        [ 0.0,  1.0,  0.0],
+//        [ 0.0,  0.0, -1.0],
+//        [ 0.0,  0.0,  1.0]])
+```
 */
 pub fn star(n: usize, alpha: &str, center: Vec<u32>) -> Result<(Array2<f32>, f32), String> {
     // Star points at the center of each face of the factorial

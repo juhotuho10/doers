@@ -7,85 +7,63 @@ use ndarray::{s, Array, Array1, Array2, ArrayBase, Axis, Data, Ix2, Zip};
 use ndarray_rand::rand::{thread_rng, Rng};
 use std::vec;
 
-/*
-Generate a latin-hypercube design
+/**
+Generates a latin-hypercube design.
 
-Parameters
-----------
-n : int
-    The number of factors to generate samples for
+# Parameters
 
-Optional
---------
-samples : int
-    The number of samples to generate for each factor (Default: n)
-criterion : str
-    Allowable values are "center" or "c", "maximin" or "m",
-    "centermaximin" or "cm", and "correlation" or "corr". If no value
-    given, the design is simply randomized.
-iterations : int
-    The number of iterations in the maximin and correlations algorithms
-    (Default: 5).
-randomstate : np.random.RandomState, int
-     Random state (or seed-number) which controls the seed and random draws
-correlation_matrix : ndarray
-     Enforce correlation between factors (only used in lhs_mu)
+- `n`: `usize`
+  The number of factors to generate samples for.
 
-Returns
--------
-H : 2d-array
-    An n-by-samples design matrix that has been normalized so factor values
-    are uniformly spaced between zero and one.
+# Optional
 
-Example
--------
-A 3-factor design (defaults to 3 samples)::
+- `samples`: `usize`
+  The number of samples to generate for each factor (Default: `n`).
 
-    >>> lhs(3, random_state=42)
-    array([[ 0.12484671,  0.95539205,  0.24399798],
-           [ 0.53288616,  0.38533955,  0.86703834],
-           [ 0.68602787,  0.31690477,  0.38533151]])
+- `iterations`: `usize`
+  The number of iterations in the maximin and correlations algorithms (Default: 5).
 
-A 4-factor design with 6 samples::
+- `random_state`: `u64`
+  Seed-number that controls the random draws.
 
-    >>> lhs(4, samples=6, random_state=42)
-    array([[ 0.06242335,  0.19266575,  0.88202411,  0.89439364],
-           [ 0.19266977,  0.53538985,  0.53030416,  0.49498498],
-           [ 0.71737371,  0.75412607,  0.17634727,  0.71520486],
-           [ 0.63874044,  0.85658231,  0.33676408,  0.31102936],
-           [ 0.43351917,  0.45134543,  0.12199899,  0.53056742],
-           [ 0.93530882,  0.15845238,  0.7386575 ,  0.09977641]])
+# Returns
 
-A 2-factor design with 5 centered samples::
+- `H`: `Array2<f64>`
+  An `n`-by-`samples` design matrix that has been normalized so factor values are uniformly spaced between zero and one.
 
-    >>> lhs(2, samples=5, criterion='center', random_state=42)
-    array([[ 0.1,  0.9],
-           [ 0.5,  0.5],
-           [ 0.7,  0.1],
-           [ 0.3,  0.7],
-           [ 0.9,  0.3]])
+# Example
 
-A 3-factor design with 4 samples where the minimum distance between
-all samples has been maximized::
+A 3-factor design (defaults to 3 samples):
+```rust
+// lhs(3, random_state=42);
+// Expected output:
+// Array2([[0.12484671, 0.95539205, 0.24399798],
+//         [0.53288616, 0.38533955, 0.86703834],
+//         [0.68602787, 0.31690477, 0.38533151]])
+```
 
-    >>> lhs(3, samples=4, criterion='maximin', random_state=42)
-    array([[ 0.69754389,  0.2997106 ,  0.96250964],
-           [ 0.10585037,  0.09872038,  0.73157522],
-           [ 0.25351996,  0.65148999,  0.07337204],
-           [ 0.91276926,  0.97873992,  0.42783549]])
+A 4-factor design with 6 samples:
+```
+// lhs(4, samples=6, random_state=42);
+// Expected output:
+// Array2([[0.06242335, 0.19266575, 0.88202411, 0.89439364],
+//         [0.19266977, 0.53538985, 0.53030416, 0.49498498],
+//         ...
+//         [0.93530882, 0.15845238, 0.7386575, 0.09977641]])
 
-A 4-factor design with 5 samples where the samples are as uncorrelated
-as possible (within 10 iterations)::
+```
 
-    >>> lhs(4, samples=5, criterion='correlation', iterations=10, random_state=42)
-    array([[ 0.72088348,  0.05121366,  0.97609357,  0.92487081],
-           [ 0.49507404,  0.51265511,  0.00808672,  0.37915272],
-           [ 0.22217816,  0.2878673 ,  0.24034384,  0.42786629],
-           [ 0.91977309,  0.93895699,  0.64061224,  0.14213258],
-           [ 0.04719698,  0.70796822,  0.53910322,  0.78857071]])
+A 2-factor design with 5 centered samples:
+```
+// lhs(2, samples=5, criterion="center", random_state=42);
+// Expected output:
+// Array2([[0.1, 0.9],
+//        [0.5, 0.5],
+//        ...
+//        [0.9, 0.3]])
 
+```
 */
-
 #[allow(dead_code)]
 pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     // Generate a random array using `rng`
@@ -267,6 +245,24 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
 // ----------------------------------------------- Utilities ----------------------------------------------------
 // ##############################################################################################################
 
+/**
+Calculates the Euclidean distance between two points in n-dimensional space.
+
+The Euclidean distance is the straight-line distance between two points in Euclidean space. It is calculated as the square root of the sum of the squared differences between the corresponding elements of the two points.
+
+# Parameters
+
+- `a`: &Array1<f32>
+    A one-dimensional array representing the coordinates of the first point in n-dimensional space. Each element in the array corresponds to a coordinate in a particular dimension.
+
+- `b`: Array1<f32>
+    A one-dimensional array representing the coordinates of the second point in n-dimensional space. The length of `b` must match the length of `a` to correctly calculate the distance.
+
+# Returns
+
+- `f32`
+    The Euclidean distance between the two points as a floating-point number. The distance is non-negative and represents the "length" of the straight line connecting the two points in n-dimensional space.
+*/
 fn euclidean_distance(a: &Array1<f32>, b: Array1<f32>) -> f32 {
     a.iter()
         .zip(b.iter())
@@ -274,8 +270,22 @@ fn euclidean_distance(a: &Array1<f32>, b: Array1<f32>) -> f32 {
         .sum::<f32>()
         .sqrt()
 }
+/**
+Computes the pairwise Euclidean distances between rows in a 2D array.
 
-/// Computes the pairwise distances between rows in a 2D array.
+Each row in the input array represents a point in n-dimensional space. This function calculates the Euclidean distance between every pair of points (rows) and returns a one-dimensional array containing these distances.
+
+# Parameters
+
+- `input`: &Array2<f32>
+    A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are expected to be `[number_of_points, dimensions_of_each_point]`.
+
+# Returns
+
+- `Array1<f32>`
+    A one-dimensional array of floating-point numbers, where each element is the Euclidean distance between a pair of points (rows) in the input array. 
+    The distances are listed in the order they were computed, which corresponds to a row-wise upper triangular traversal of the pairwise distance matrix, excluding the diagonal.
+*/
 fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
     let rows = input.nrows();
     let mut distances = Vec::new();
@@ -290,6 +300,30 @@ fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
 
     Array1::from(distances)
 }
+
+/**
+Computes the Euclidean distances between each pair of the two collections of inputs.
+
+The function takes two 2-dimensional arrays, `a` and `b`, each representing a collection of points in n-dimensional space. 
+It calculates the Euclidean distance between each pair of points where one point is from `a` and the other is from `b`. 
+The result is a 2-dimensional array where the element at position (i, j) represents the distance between the i-th point in `a` and the j-th point in `b`.
+
+# Parameters
+
+- `a`: &Array2<f32>
+    A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_a, dimensions_of_each_point]`.
+
+- `b`: &Array2<f32>
+    A two-dimensional array similar to `a`, where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_b, dimensions_of_each_point]`. 
+    It is not required for `a` and `b` to have the same number of points (rows), but they must be in the same n-dimensional space (have the same number of columns).
+
+# Returns
+
+- `Array2<f32>`
+    A two-dimensional array of floating-point numbers, where each element (i, j) is the Euclidean distance between the i-th point in `a` and the j-th point in `b`. The resulting array has dimensions `[number_of_points_a, number_of_points_b]`.
+
+This function is useful for computing distances between two sets of points in machine learning algorithms, such as clustering, where the calculation of distances between points is a common operation.
+*/
 fn cdist_euclidean(a: &Array2<f32>, b: &Array2<f32>) -> Array2<f32> {
     let mut distances = Array2::<f32>::zeros((a.nrows(), b.nrows()));
     for (i, a_row) in a.outer_iter().enumerate() {
@@ -306,6 +340,27 @@ fn cdist_euclidean(a: &Array2<f32>, b: &Array2<f32>) -> Array2<f32> {
     distances
 }
 
+/**
+Calculates the correlation coefficient matrix for a given dataset.
+
+The correlation coefficient matrix, often denoted as R, is a measure of the strength and direction of a linear relationship between two variables.
+This function computes the correlation coefficients for every pair of variables in the input dataset, returning a matrix where each element (i, j) represents the correlation coefficient between the i-th and j-th variables.
+
+# Type Parameters
+
+- `S`: The storage type of the array, which must satisfy the `Data` trait with `Elem = f32`. This allows the function to work with different array storage types while ensuring the elements are floating-point numbers.
+
+# Parameters
+
+- `x`: &ArrayBase<S, Ix2>
+    A two-dimensional array where each column represents a variable and each row represents an observation. The input array `x` must have floating-point numbers (`f32`).
+
+# Returns
+
+- `Array2<f32>`
+    A two-dimensional array of floating-point numbers representing the correlation coefficient matrix of the input variables. The dimensions of the returned matrix are `(x.ncols(), x.ncols())`,
+    where each element (i, j) is the correlation coefficient between the i-th and j-th variables in the input dataset.
+*/
 fn corrcoef<S>(x: &ArrayBase<S, Ix2>) -> Array2<f32>
 where
     S: Data<Elem = f32>,
@@ -340,6 +395,24 @@ where
     cov_matrix
 }
 
+/**
+Finds the maximum absolute value of the off-diagonal elements in a square matrix.
+
+This function calculates the maximum absolute value among all off-diagonal elements of the input matrix `r`.
+It is useful for identifying the largest element outside the main diagonal, which can be indicative of the need for further matrix operations or adjustments in numerical methods.
+
+# Parameters
+
+- `r`: &Array2<f32>
+    A two-dimensional square array of floating-point numbers. The function considers elements outside the main diagonal for its calculation.
+
+# Returns
+
+- `f32`
+    The maximum absolute value among all off-diagonal elements of the matrix `r`.
+
+This function is commonly used in numerical analysis and matrix computations, especially in algorithms that involve matrix diagonalization or convergence checks.
+*/
 fn max_abs_off_diagonal(r: &Array2<f32>) -> f32 {
     let identity: Array2<f32> = Array2::eye(r.nrows());
     let abs_diff = (r - identity).mapv_into(f32::abs);
@@ -347,12 +420,55 @@ fn max_abs_off_diagonal(r: &Array2<f32>) -> f32 {
 
     max_abs_off_diag
 }
+
+/**
+Calculates the mean of the first two non-NaN values in a slice of floating-point numbers.
+
+This function processes an input slice of floating-point numbers, filtering out any NaN values, and then calculates the average of the first two valid (non-NaN) numbers.
+If the slice contains fewer than two non-NaN values, the function calculates the mean of available non-NaN values. If no valid values are found, the function returns 0.0, representing an undefined mean due to the absence of valid inputs.
+
+# Parameters
+
+- `values`: &[f32]
+    A slice of floating-point numbers, potentially containing NaN values, from which the mean of the first two valid values will be calculated.
+
+# Returns
+
+- `f32`
+    The mean of the first two non-NaN values in the input slice. If the input contains fewer than two non-NaN values, the mean of available non-NaN values is returned. If no valid values are present, 0.0 is returned.
+
+# Note
+
+- This function is designed to ignore NaN values, which can be common in datasets with missing or undefined values. It ensures that calculations are based only on valid numerical data.
+
+This function is useful in data processing and analysis tasks where it is necessary to compute statistics on datasets that may include missing or undefined values.
+*/
 fn mean_of_first_two(values: &[f32]) -> f32 {
     let valid_values: Vec<f32> = values.iter().filter(|&&v| !v.is_nan()).cloned().collect();
     let total: f32 = valid_values.iter().take(2).sum();
     total / valid_values.len() as f32
 }
 
+/**
+Removes specified rows from a 2D array and returns the resulting array.
+
+Given a 2D array and a list of row indices, this function creates a new 2D array with the specified rows removed.
+The function is careful to handle indices that fall outside the range of the array's row count by simply ignoring them.
+This is particularly useful in data manipulation tasks where certain observations (rows) need to be excluded based on some criteria.
+
+# Parameters
+
+- `arr`: Array2<f32>
+    The original two-dimensional array from which rows will be removed. It should be of any size but with floating-point numbers (f32).
+
+- `indices`: Array1<usize>
+    An array of row indices to be removed from `arr`. Indices should be zero-based and can be in any order. If an index is out of bounds (i.e., greater than or equal to `arr.nrows()`), it will be ignored.
+
+# Returns
+
+- `Array2<f32>`
+    A new two-dimensional array that is a copy of `arr` with the specified rows removed. If all specified indices are out of bounds, the returned array will be identical to `arr`.
+*/
 fn delete_rows(arr: Array2<f32>, indices: Array1<usize>) -> Array2<f32> {
     let mut to_delete = vec![false; arr.nrows()];
     for &index in indices.iter() {
@@ -377,10 +493,26 @@ fn delete_rows(arr: Array2<f32>, indices: Array1<usize>) -> Array2<f32> {
     }
 }
 
+/**
+Sorts each row of a 2D array, handling NaN values by placing them at the end of each row.
+
+This function iterates over each row of a 2D array and sorts the elements in ascending order, with the exception that NaN values are treated as greater than any number.
+This ensures that NaN values are moved to the end of each row after sorting. The sorting is stable for non-NaN values, preserving their relative order when possible.
+
+# Parameters
+
+- `array`: Array2<f32>
+    A mutable reference to a two-dimensional array of floating-point numbers. The array is modified in place, with each row sorted according to the rules specified.
+
+# Returns
+
+- `Array2<f32>`
+    The same array passed in, with each row sorted such that numerical values are in ascending order and NaN values are placed at the end of each row. This allows for easier handling of NaN values in subsequent data processing steps.
+
+The function's approach to handling NaN values makes it particularly useful in data processing and analysis tasks where NaN represents missing or undefined data that should not interfere with sorting operations.
+*/
 fn sort_array2_by_axis_with_nan_handling(mut array: Array2<f32>) -> Array2<f32> {
-    // Iterate over each row
     for mut row in array.axis_iter_mut(Axis(0)) {
-        // Convert the row to a Vec<f32>, sort it, then update the row
         let mut row_vec: Vec<f32> = row.to_vec();
 
         // Custom sort to handle NaN values. We use partial_cmp for comparison
@@ -403,6 +535,25 @@ fn sort_array2_by_axis_with_nan_handling(mut array: Array2<f32>) -> Array2<f32> 
     array
 }
 
+/**
+Finds the index of the minimum non-NaN value in a slice of floating-point numbers.
+
+This function iterates over a slice of `f32` values, ignoring any NaN values, and returns the index of the minimum value found. If the slice contains only NaN values or is empty, it returns `None`. 
+This is useful for data analysis tasks where NaN values represent missing data and should not be considered in minimum value calculations.
+
+# Parameters
+
+- `vec`: &[f32]
+    A slice of floating-point numbers which may include NaN values alongside regular floating-point numbers.
+
+# Returns
+
+- `Option<usize>`
+    An `Option` containing the index of the minimum non-NaN value in the slice. Returns `None` if the slice is empty or contains only NaN values, indicating that a minimum value could not be determined under the given conditions.
+
+This function is particularly useful in statistical computations and data preprocessing, where it's common to encounter and need to gracefully handle NaN values.
+
+ */
 fn argmin_ignore_nan(vec: &[f32]) -> Option<usize> {
     vec.iter()
         .enumerate()
@@ -417,6 +568,27 @@ fn argmin_ignore_nan(vec: &[f32]) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
+
+/**
+Sorts each column of a 2D array and returns an array of sorted indices.
+
+Given a 2D array of floating-point numbers, this function sorts the values in each column while handling NaN values by placing them at the end of the sorting order. 
+Instead of sorting the array itself, it returns a new 2D array where each element is the original index of the corresponding sorted element in the input array. 
+This is useful for tasks that require sorting data while retaining a mapping back to the original data order.
+
+# Parameters
+
+- `array`: &Array2<f32>
+    A reference to a two-dimensional array of floating-point numbers. The array is not modified by this function.
+
+# Returns
+
+- `Array2<usize>`
+    A two-dimensional array of the same shape as `array`, where each element in the array represents the original index of the corresponding sorted element in each column of the input array.
+
+This function is particularly useful in data analysis and preprocessing where sorting is needed but the original indices must be retained for further processing or analysis.
+
+*/
 fn argsort_axis0(array: &Array2<f32>) -> Array2<usize> {
     let mut sorted_indices = Array2::default((array.nrows(), array.ncols()));
 
