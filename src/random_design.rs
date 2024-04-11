@@ -3,7 +3,7 @@ use ndarray_rand::rand_distr::{Distribution, Uniform}; // For uniform distributi
 use ndarray_rand::RandomExt; // For random array generation // For seeding the random number generator // A small, fast RNG
 
 use ndarray::stack;
-use ndarray::{s, Array, Array1, Array2, ArrayBase, Axis, Data, Ix2, Zip};
+use ndarray::{s, Array, Array1, Array2, Axis, Zip};
 use ndarray_rand::rand::{thread_rng, Rng};
 use std::vec;
 
@@ -198,7 +198,6 @@ pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16)
 
         let h_candidate = lhs_classic(n, samples, random_int);
 
-        // TODO: pairwise_euclidean_dist probably wrongly implemented, needs testing
         let dist_array = pairwise_euclidean_dist(&h_candidate).to_owned();
 
         // Assuming implementation for pairwise_euclidean_dist provided elsewhere
@@ -265,7 +264,7 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
         let random_int = rng.gen_range(0..u64::MAX);
         rng = SmallRng::seed_from_u64(random_int);
         let h_candidate = lhs_classic(n, samples, random_int);
-        let corr = corrcoef(&h_array.t());
+        let corr = corrcoef(&h_array.t().to_owned());
         let max_corr = corr
             .iter()
             .filter(|&&x| x != 1.0)
@@ -405,7 +404,7 @@ The Euclidean distance is the straight-line distance between two points in Eucli
 - `f32`
     The Euclidean distance between the two points as a floating-point number. The distance is non-negative and represents the "length" of the straight line connecting the two points in n-dimensional space.
 */
-fn euclidean_distance(a: &Array1<f32>, b: Array1<f32>) -> f32 {
+fn euclidean_distance(a: &Array1<f32>, b: &Array1<f32>) -> f32 {
     a.iter()
         .zip(b.iter())
         .map(|(a, b)| (a - b).powi(2))
@@ -434,7 +433,7 @@ fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
 
     for i in 0..rows {
         for j in i + 1..rows {
-            let distance = euclidean_distance(&input.row(i).to_owned(), input.row(j).to_owned());
+            let distance = euclidean_distance(&input.row(i).to_owned(), &input.row(j).to_owned());
 
             distances.push(distance);
         }
@@ -503,10 +502,8 @@ This function computes the correlation coefficients for every pair of variables 
     A two-dimensional array of floating-point numbers representing the correlation coefficient matrix of the input variables. The dimensions of the returned matrix are `(x.ncols(), x.ncols())`,
     where each element (i, j) is the correlation coefficient between the i-th and j-th variables in the input dataset.
 */
-fn corrcoef<S>(x: &ArrayBase<S, Ix2>) -> Array2<f32>
-where
-    S: Data<Elem = f32>,
-{
+fn corrcoef(x: &Array2<f32>) -> Array2<f32> {
+    let x = x.t();
     let means = x.mean_axis(Axis(0)).unwrap();
     let mut cov_matrix = Array2::<f32>::zeros((x.ncols(), x.ncols()));
 
@@ -937,6 +934,54 @@ mod tests {
                     0.5 / (samples as f32)
                 ));
             }
+        }
+    }
+
+    mod utilities_tests {
+
+        use ndarray::{arr1, arr2, Array2};
+
+        use crate::random_design::{
+            corrcoef, pairwise_euclidean_dist,
+            tests::{array1_are_close, array2_are_close},
+        };
+
+        #[test]
+        fn euclidean_distance_test() {
+            // making sure that the re-implementation of scipy.spatial.distance.pdist is correct
+            let test_arr = arr2(&[
+                [-1., -2., -3.],
+                [1., 2., 3.],
+                [10., -15., 32.],
+                [-100., 340., 32.],
+                [-342., 421., -523.],
+            ]);
+            let expected = arr1(&[
+                7.483315, 38.923, 357.7569, 752.0705, 34.799427, 353.9576, 754.90796, 371.65173,
+                788.6856, 610.86005,
+            ]);
+            let result_array = pairwise_euclidean_dist(&test_arr);
+            assert!(array1_are_close(&result_array, &expected, 0.01));
+        }
+
+        #[test]
+        fn correlation_test() {
+            // making sure that the re-implementation of np.corrcoef is correct
+            let test_arr: Array2<f32> = arr2(&[
+                [-1., -2., -3.],
+                [1., 2., 3.],
+                [10., -15., 32.],
+                [-100., 340., 32.],
+                [-342., 421., -523.],
+            ]);
+            let expected = arr2(&[
+                [1.0, -0.89002377, 0.9418991],
+                [-0.89002377, 1.0, -0.6858651],
+                [0.9418991, -0.6858651, 1.0],
+            ]);
+
+            let result_array = corrcoef(&test_arr.t().to_owned());
+            assert!(array2_are_close(&result_array, &expected, 0.01));
         }
     }
 }

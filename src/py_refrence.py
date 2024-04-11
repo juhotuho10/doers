@@ -7,12 +7,12 @@ import numpy as np
 from scipy.linalg import toeplitz, hankel
 from math import frexp
 import itertools
-
+from scipy import spatial
 from pyDOE2.doe_lhs import lhs
 
-
-
-arr = lhs(n=10, samples=10, iterations = 100, criterion="centermaximin", random_state=10)
-
-print(arr)
+input = [[-1.,-2.,-3.], [1.,2.,3.], [10., -15., 32.], [-100., 340., 32.], [-342. , 421., -523.]]
+Hcandidate = np.array(input).astype(np.float32)
+d = np.corrcoef(Hcandidate.T).astype(np.float32)
+for i in d:
+    print(f"{list(i)},")
 
