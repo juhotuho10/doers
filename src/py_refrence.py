@@ -14,7 +14,12 @@ input = [[-1.,-2.,-3.], [1.,2.,3.], [10., -15., 32.], [-100., 340., 32.], [-342.
 Hcandidate = np.array(input).astype(np.float32)
 
 
-f, e = np.frexp([5, 5/12., 5/20.])
+result = pbdesign(8).astype(int)
 
-print(list(f))
-print(list(e))
+for i in result:
+    print(list(i))
+
+result = pbdesign(16).astype(int)
+
+for i in result:
+    print(list(i))

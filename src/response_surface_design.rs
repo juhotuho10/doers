@@ -374,7 +374,8 @@ mod tests {
     use super::*;
     use ndarray::{arr2, Zip};
 
-    fn arrays_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
+    fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
+        // checks if all the Array2 elements are within tolerance
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
@@ -539,7 +540,7 @@ mod tests {
         ]);
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
-        assert!(arrays_are_close(&return_array, &expected, 0.01));
+        assert!(array2_are_close(&return_array, &expected, 0.01));
     }
 
     #[test]
@@ -574,7 +575,7 @@ mod tests {
         ]);
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
-        assert!(arrays_are_close(&return_array, &expected, 0.01));
+        assert!(array2_are_close(&return_array, &expected, 0.01));
     }
 
     #[test]
@@ -621,7 +622,7 @@ mod tests {
         ]);
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
-        assert!(arrays_are_close(&return_array, &expected, 0.01));
+        assert!(array2_are_close(&return_array, &expected, 0.01));
     }
 
     #[test]
@@ -649,7 +650,7 @@ mod tests {
         ]);
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
-        assert!(arrays_are_close(&return_array, &expected, 0.01));
+        assert!(array2_are_close(&return_array, &expected, 0.01));
     }
 
     #[test]
@@ -681,6 +682,6 @@ mod tests {
         ]);
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
-        assert!(arrays_are_close(&return_array, &expected, 0.01));
+        assert!(array2_are_close(&return_array, &expected, 0.01));
     }
 }
