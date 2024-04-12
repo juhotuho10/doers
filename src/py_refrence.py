@@ -12,7 +12,9 @@ from pyDOE2.doe_lhs import lhs
 
 input = [[-1.,-2.,-3.], [1.,2.,3.], [10., -15., 32.], [-100., 340., 32.], [-342. , 421., -523.]]
 Hcandidate = np.array(input).astype(np.float32)
-d = np.corrcoef(Hcandidate.T).astype(np.float32)
-for i in d:
-    print(f"{list(i)},")
 
+
+f, e = np.frexp([5, 5/12., 5/20.])
+
+print(list(f))
+print(list(e))

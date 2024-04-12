@@ -619,155 +619,186 @@ fn hankel(c: &[i32], r: &[i32]) -> Array2<i32> {
 mod tests {
     // Testing the functions with a known output
     use super::*;
-    use ndarray::arr2;
-
-    #[test]
-    fn fullfact_1() {
-        let input = vec![];
-        let expected = arr2(&[[]]);
-        assert_eq!(fullfact(input).unwrap(), expected);
+    use ndarray::Zip;
+    fn array1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
+        // checks if all the Array1 elements are within tolerance
+        Zip::from(a)
+            .and(b)
+            .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
     }
 
-    #[test]
-    fn fullfact_2() {
-        let input = vec![1, 2];
-        let expected = arr2(&[[0, 0], [0, 1]]);
-        assert_eq!(fullfact(input).unwrap(), expected);
-    }
+    mod functionality_tests {
+        use ndarray::arr2;
 
-    #[test]
-    fn fullfact_3() {
-        let input = vec![1, 2, 3];
-        let expected = arr2(&[
-            [0, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1],
-            [0, 1, 1],
-            [0, 0, 2],
-            [0, 1, 2],
-        ]);
-        assert_eq!(fullfact(input).unwrap(), expected);
-    }
+        use super::*;
 
-    #[test]
-    fn ff2n_1() {
-        let input = 1;
-        let expected = arr2(&[[-1], [1]]);
-        assert_eq!(ff2n(input).unwrap(), expected);
-    }
+        #[test]
+        fn fullfact_1() {
+            let input = vec![];
+            let expected = arr2(&[[]]);
+            assert_eq!(fullfact(input).unwrap(), expected);
+        }
 
-    #[test]
-    fn ff2n_2() {
-        let input = 2;
-        let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
-        assert_eq!(ff2n(input).unwrap(), expected);
-    }
+        #[test]
+        fn fullfact_2() {
+            let input = vec![1, 2];
+            let expected = arr2(&[[0, 0], [0, 1]]);
+            assert_eq!(fullfact(input).unwrap(), expected);
+        }
 
-    #[test]
-    fn ff2n_3() {
-        let input = 4;
-        let expected = arr2(&[
-            [-1, -1, -1, -1],
-            [1, -1, -1, -1],
-            [-1, 1, -1, -1],
-            [1, 1, -1, -1],
-            [-1, -1, 1, -1],
-            [1, -1, 1, -1],
-            [-1, 1, 1, -1],
-            [1, 1, 1, -1],
-            [-1, -1, -1, 1],
-            [1, -1, -1, 1],
-            [-1, 1, -1, 1],
-            [1, 1, -1, 1],
-            [-1, -1, 1, 1],
-            [1, -1, 1, 1],
-            [-1, 1, 1, 1],
-            [1, 1, 1, 1],
-        ]);
-        assert_eq!(ff2n(input).unwrap(), expected);
-    }
-
-    #[test]
-    fn pbdesign_1() {
-        let input = 2;
-        let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
-        assert_eq!(pbdesign(input), expected);
-    }
-
-    #[test]
-    fn pbdesign_2() {
-        let input = 4;
-        let expected = arr2(&[
-            [-1, -1, 1, -1],
-            [1, -1, -1, -1],
-            [-1, 1, -1, -1],
-            [1, 1, 1, -1],
-            [-1, -1, 1, 1],
-            [1, -1, -1, 1],
-            [-1, 1, -1, 1],
-            [1, 1, 1, 1],
-        ]);
-        assert_eq!(pbdesign(input), expected);
-    }
-
-    #[test]
-    fn gsd_1() {
-        let levels = vec![2, 2, 3];
-        let reductions = 2;
-        let n = 1;
-        let expected = vec![arr2(&[
-            [0, 0, 0],
-            [0, 0, 2],
-            [0, 1, 1],
-            [1, 0, 1],
-            [1, 1, 0],
-            [1, 1, 2],
-        ])];
-        assert_eq!(gsd(levels, reductions, n), expected);
-    }
-
-    #[test]
-    fn gsd_2() {
-        let levels = vec![3, 3, 2];
-        let reductions = 4;
-        let n = 2;
-        let expected = vec![
-            arr2(&[[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]]),
-            arr2(&[[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]]),
-        ];
-
-        assert_eq!(gsd(levels, reductions, n), expected);
-    }
-
-    #[test]
-    fn gsd_3() {
-        let levels = vec![3, 3, 3];
-        let reductions = 3;
-        let n = 2;
-        let expected = vec![
-            arr2(&[
+        #[test]
+        fn fullfact_3() {
+            let input = vec![1, 2, 3];
+            let expected = arr2(&[
                 [0, 0, 0],
-                [0, 1, 1],
-                [0, 2, 2],
-                [1, 0, 1],
-                [1, 1, 2],
-                [1, 2, 0],
-                [2, 0, 2],
-                [2, 1, 0],
-                [2, 2, 1],
-            ]),
-            arr2(&[
+                [0, 1, 0],
                 [0, 0, 1],
+                [0, 1, 1],
+                [0, 0, 2],
                 [0, 1, 2],
-                [0, 2, 0],
-                [1, 0, 2],
+            ]);
+            assert_eq!(fullfact(input).unwrap(), expected);
+        }
+
+        #[test]
+        fn ff2n_1() {
+            let input = 1;
+            let expected = arr2(&[[-1], [1]]);
+            assert_eq!(ff2n(input).unwrap(), expected);
+        }
+
+        #[test]
+        fn ff2n_2() {
+            let input = 2;
+            let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
+            assert_eq!(ff2n(input).unwrap(), expected);
+        }
+
+        #[test]
+        fn ff2n_3() {
+            let input = 4;
+            let expected = arr2(&[
+                [-1, -1, -1, -1],
+                [1, -1, -1, -1],
+                [-1, 1, -1, -1],
+                [1, 1, -1, -1],
+                [-1, -1, 1, -1],
+                [1, -1, 1, -1],
+                [-1, 1, 1, -1],
+                [1, 1, 1, -1],
+                [-1, -1, -1, 1],
+                [1, -1, -1, 1],
+                [-1, 1, -1, 1],
+                [1, 1, -1, 1],
+                [-1, -1, 1, 1],
+                [1, -1, 1, 1],
+                [-1, 1, 1, 1],
+                [1, 1, 1, 1],
+            ]);
+            assert_eq!(ff2n(input).unwrap(), expected);
+        }
+
+        #[test]
+        fn pbdesign_1() {
+            let input = 2;
+            let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
+            assert_eq!(pbdesign(input), expected);
+        }
+
+        #[test]
+        fn pbdesign_2() {
+            let input = 4;
+            let expected = arr2(&[
+                [-1, -1, 1, -1],
+                [1, -1, -1, -1],
+                [-1, 1, -1, -1],
+                [1, 1, 1, -1],
+                [-1, -1, 1, 1],
+                [1, -1, -1, 1],
+                [-1, 1, -1, 1],
+                [1, 1, 1, 1],
+            ]);
+            assert_eq!(pbdesign(input), expected);
+        }
+
+        #[test]
+        fn gsd_1() {
+            let levels = vec![2, 2, 3];
+            let reductions = 2;
+            let n = 1;
+            let expected = vec![arr2(&[
+                [0, 0, 0],
+                [0, 0, 2],
+                [0, 1, 1],
+                [1, 0, 1],
                 [1, 1, 0],
-                [1, 2, 1],
-                [2, 0, 0],
-                [2, 1, 1],
-                [2, 2, 2],
-            ]),
-        ];
-        assert_eq!(gsd(levels, reductions, n), expected);
+                [1, 1, 2],
+            ])];
+            assert_eq!(gsd(levels, reductions, n), expected);
+        }
+
+        #[test]
+        fn gsd_2() {
+            let levels = vec![3, 3, 2];
+            let reductions = 4;
+            let n = 2;
+            let expected = vec![
+                arr2(&[[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]]),
+                arr2(&[[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]]),
+            ];
+
+            assert_eq!(gsd(levels, reductions, n), expected);
+        }
+
+        #[test]
+        fn gsd_3() {
+            let levels = vec![3, 3, 3];
+            let reductions = 3;
+            let n = 2;
+            let expected = vec![
+                arr2(&[
+                    [0, 0, 0],
+                    [0, 1, 1],
+                    [0, 2, 2],
+                    [1, 0, 1],
+                    [1, 1, 2],
+                    [1, 2, 0],
+                    [2, 0, 2],
+                    [2, 1, 0],
+                    [2, 2, 1],
+                ]),
+                arr2(&[
+                    [0, 0, 1],
+                    [0, 1, 2],
+                    [0, 2, 0],
+                    [1, 0, 2],
+                    [1, 1, 0],
+                    [1, 2, 1],
+                    [2, 0, 0],
+                    [2, 1, 1],
+                    [2, 2, 2],
+                ]),
+            ];
+            assert_eq!(gsd(levels, reductions, n), expected);
+        }
+    }
+
+    mod utilities_tests {
+        use ndarray::{arr1, Array1};
+
+        use crate::factorial_design::{frexp, tests::array1_are_close};
+
+        #[test]
+        fn frexp_test() {
+            let levels: Array1<f32> = arr1(&[5., 5. / 12., 5. / 20.]);
+            let (f, e) = frexp(&levels);
+
+            let e = e.mapv(|x| x as f32);
+
+            let expected_f = arr1(&[0.625, 0.8333333, 0.5]);
+            let expected_e = arr1(&[3., -1., -1.]);
+            assert!(array1_are_close(&f, &expected_f, 0.01));
+            assert!(array1_are_close(&e, &expected_e, 0.01));
+        }
     }
 }
