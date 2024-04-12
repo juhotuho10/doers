@@ -25,14 +25,14 @@ original Scilab code was originally made by:
 - Website: [scidoe](https://atoms.scilab.org/toolboxes/scidoe/0.4.1)
 
 converted to Python and worked on by:
-- Copyright (c) 2014, Abraham D. Lee
+- Copyright (c) 2014 - Abraham D. Lee
 - git repo: [pyDOE](https://github.com/tisimst/pyDOE)
 
 - Copyright (C) 2018 - Rickard Sjögren and Daniel Svensson
 - git repo: [pyDOE2](https://github.com/clicumu/pyDOE2)
 
 Converted to Rust and worked on by:
-- Copyright (c) 2024, Juho Naatula
+- Copyright (c) 2024 - Juho Naatula
 - Cargo.io page: doers [to be added]
 
 References
