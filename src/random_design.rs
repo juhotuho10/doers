@@ -30,6 +30,7 @@ Generates a classic latin-hypercube design.
 
 A 4-sample design:
 ```rust
+use doers::random_design::lhs_classic;
 let n = 4;
 let samples = 4;
 let random_state = 42;
@@ -101,6 +102,7 @@ Generates a latin-hypercube design with equal spacing between each value.
 
 A 4-sample design:
 ```rust
+use doers::random_design::lhs_centered;
 let n = 4;
 let samples = 4;
 let random_state = 42;
@@ -170,6 +172,7 @@ Generates and iterates over classic latin-hypercube design to make it more equal
 
 A 4-sample design:
 ```rust
+use doers::random_design::lhs_maximin;
 let n = 4;
 let samples = 4;
 let random_state = 42;
@@ -239,9 +242,11 @@ Generates and iterates over classic latin-hypercube design to make it less corre
 
 A 4-sample design:
 ```rust
+use doers::random_design::lhs_correlate;
 let n = 4;
 let samples = 4;
 let random_state = 42;
+let iterations = 100;
 let example_array = lhs_correlate(n, samples, random_state, iterations);
 // resulting Array2:
 // [[0.0793857,  0.6603068,   0.4616545,  0.03551933],
@@ -303,6 +308,7 @@ Generates a classic latin-hypercube design.
 
 A 4-sample design:
 ```rust
+use doers::random_design::lhs_mu;
 let n = 4;
 let samples = 4;
 let random_state = 42;

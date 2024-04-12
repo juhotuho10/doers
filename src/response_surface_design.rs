@@ -165,7 +165,7 @@ Generates a Central Composite Design (CCD).
 
 Generate a CCD for 3 factors:
 ```rust
-///ccdesign(3, None, None, None);
+//ccdesign(3, None, None, None);
 // Expected output:
 //    Array2([[-1.        , -1.        , -1.        ],
 //            [ 1.        , -1.        , -1.        ],
