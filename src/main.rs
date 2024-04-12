@@ -44,5 +44,4 @@ fn main() {
     for col in arr.axis_iter(Axis(1)) {
         assert_eq!(center, sort_ndarray_array1(col.to_owned()))
     }
-
 }
