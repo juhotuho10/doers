@@ -1,4 +1,6 @@
 # doers
+[![Codecov](https://codecov.io/github/juhotuho10/doers/coverage.svg?branch=master)](https://app.codecov.io/gh/juhotuho10/doers)
+
 A Rust port of [pyDOE2](https://github.com/clicumu/pyDOE2)
 
 Rust crate for generating Design Of Experiments designs
