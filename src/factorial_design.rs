@@ -258,7 +258,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
             let bottom: Array2<i32> = concatenate![Axis(1), bottom_left, bottom_right];
             h = concatenate![Axis(0), top, bottom];
         }
-        _ => panic!("Invalid value for k, this shouldn't happen"),
+        _ => unreachable!("Invalid value for k, this shouldn't happen"),
     };
 
     for _ in 0..exp {
