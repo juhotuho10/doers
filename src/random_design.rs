@@ -217,13 +217,8 @@ pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16)
 
     for _ in 0..iterations {
         let random_int = rng.gen_range(0..u64::MAX);
-        rng = SmallRng::seed_from_u64(random_int);
-
         let h_candidate = lhs_classic(n, samples, random_int);
-
         let dist_array = pairwise_euclidean_dist(&h_candidate).to_owned();
-
-        // Assuming implementation for pairwise_euclidean_dist provided elsewhere
         let min_dist = *dist_array
             .iter()
             .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
@@ -287,7 +282,6 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
 
     for _ in 0..iterations {
         let random_int = rng.gen_range(0..u64::MAX);
-        rng = SmallRng::seed_from_u64(random_int);
         let h_candidate = lhs_classic(n, samples, random_int);
         let corr = corrcoef(&h_array.t().to_owned());
         let max_corr = corr
