@@ -21,7 +21,7 @@ original Scilab code was originally made by:
 - Copyright (C) 2010 - 2011 - INRIA - Michael Baudin
 - Copyright (C) 2009 - Yann Collette
 - Copyright (C) 2009 - CEA - Jean-Marc Martinez
-- 
+
 - Website: [scidoe](https://atoms.scilab.org/toolboxes/scidoe/0.4.1)
 
 converted to Python and worked on by:
@@ -33,8 +33,7 @@ converted to Python and worked on by:
 
 Converted to Rust and worked on by:
 - Copyright (c) 2024, Juho Naatula
-- git repo: [doers](https://github.com/juhotuho10/doers)
-
+- Cargo.io page: doers [to be added]
 
 References
 ----------
