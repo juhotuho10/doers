@@ -14,6 +14,7 @@ fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
     // Step 3: Convert the sorted Vec<f32> back to an ndarray::Array1<f32>
     Array1::from(vec)
 }
+
 fn main() {
     let samples = 6;
     let arr = random_design::lhs_centered(4, samples, 10);
