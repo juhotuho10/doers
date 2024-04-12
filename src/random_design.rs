@@ -1,11 +1,31 @@
 use ndarray_rand::rand::{rngs::SmallRng, seq::SliceRandom, SeedableRng};
-use ndarray_rand::rand_distr::{Distribution, Uniform}; // For uniform distribution
-use ndarray_rand::RandomExt; // For random array generation // For seeding the random number generator // A small, fast RNG
+use ndarray_rand::rand_distr::{Distribution, Uniform};
+use ndarray_rand::RandomExt;
 
 use ndarray::stack;
 use ndarray::{s, Array, Array1, Array2, Axis, Zip};
 use ndarray_rand::rand::{thread_rng, Rng};
 use std::vec;
+/*
+This code was originally published by the following individuals for use with Scilab:
+    Copyright (C) 2012 - 2013 - Michael Baudin
+    Copyright (C) 2012 - Maria Christopoulou
+    Copyright (C) 2010 - 2011 - INRIA - Michael Baudin
+    Copyright (C) 2009 - Yann Collette
+    Copyright (C) 2009 - CEA - Jean-Marc Martinez
+    website: https://atoms.scilab.org/toolboxes/scidoe/0.4.1
+
+Converted to python and worked on by:
+    Copyright (c) 2014, Abraham D. Lee
+    git repo: https://github.com/tisimst/pyDOE
+
+    Copyright (c) 2018, Rickard Sjögren & Daniel Svensson
+    git repo: https://github.com/clicumu/pyDOE2
+
+Converted to Rust and worked on by:
+    Copyright (c) 2024, Juho Naatula
+    git repo: https://github.com/juhotuho10/doers
+*/
 
 /**
 Generates a classic latin-hypercube design.

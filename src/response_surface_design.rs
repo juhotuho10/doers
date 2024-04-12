@@ -1,5 +1,25 @@
 use ndarray::{concatenate, s, Array, Array2, Axis};
 use std::{cmp::max, vec};
+/*
+This code was originally published by the following individuals for use with Scilab:
+    Copyright (C) 2012 - 2013 - Michael Baudin
+    Copyright (C) 2012 - Maria Christopoulou
+    Copyright (C) 2010 - 2011 - INRIA - Michael Baudin
+    Copyright (C) 2009 - Yann Collette
+    Copyright (C) 2009 - CEA - Jean-Marc Martinez
+    website: https://atoms.scilab.org/toolboxes/scidoe/0.4.1
+
+Converted to python and worked on by:
+    Copyright (c) 2014, Abraham D. Lee
+    git repo: https://github.com/tisimst/pyDOE
+
+    Copyright (c) 2018, Rickard Sjögren & Daniel Svensson
+    git repo: https://github.com/clicumu/pyDOE2
+
+Converted to Rust and worked on by:
+    Copyright (c) 2024, Juho Naatula
+    git repo: https://github.com/juhotuho10/doers
+*/
 
 /**
 Creates a Box-Behnken design.
