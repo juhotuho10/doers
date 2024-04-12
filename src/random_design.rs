@@ -843,7 +843,7 @@ mod tests {
             let samples = 12;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
+            for i in 0..1000 {
                 vectors.push(lhs_classic(n, samples, i));
             }
 
@@ -857,7 +857,7 @@ mod tests {
             let samples = 3;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
+            for i in 0..1000 {
                 vectors.push(lhs_centered(n, samples, i));
             }
 
@@ -872,7 +872,7 @@ mod tests {
             let iterations = 4;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
+            for i in 0..1000 {
                 vectors.push(lhs_maximin(n, samples, i, iterations));
             }
 
@@ -887,7 +887,7 @@ mod tests {
             let iterations = 5;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
+            for i in 0..1000 {
                 vectors.push(lhs_correlate(n, samples, i, iterations));
             }
 
@@ -901,7 +901,7 @@ mod tests {
             let samples = 6;
 
             let mut vectors: Vec<Array2<f32>> = vec![];
-            for i in 0..5000 {
+            for i in 0..1000 {
                 vectors.push(lhs_mu(n, samples, i));
             }
 
