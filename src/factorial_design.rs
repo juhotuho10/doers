@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayViewMut1, Axis};
 use std::vec;
+
 /*
 This code was originally published by the following individuals for use with Scilab:
     Copyright (C) 2012 - 2013 - Michael Baudin
@@ -87,7 +88,7 @@ pub fn fullfact(levels: Vec<u16>) -> Result<Array2<u16>, String> {
     if num_lines > usize::MAX as u64 {
         return Err("Number of lines exceeds maximum allowable size.".to_string());
     } else if levels.iter().any(|x| *x == 0) {
-        return Err("Number of possible combinations cannot be 0 in levels.".to_string());
+        return Err("All level sizes must be 1 or higher".to_string());
     }
 
     let mut array: Array2<u16> = Array2::<u16>::zeros((num_lines as usize, n));
@@ -384,7 +385,7 @@ let levels = vec![2,3];
 let reductions = 5;
 let n_arrays = 1;
 let example_array = gsd(levels, reductions, n_arrays);
- // Raises ValueError: reduction too large compared to factor levels
+ // Returns an Err: Err("Reduction is too large for the design size")
  ```
 
  # References
@@ -393,9 +394,13 @@ let example_array = gsd(levels, reductions, n_arrays);
  - Vikstrom, Ludvig, et al. Computer-implemented systems and methods for generating generalized fractional designs. US9746850 B2, filed May 9, 2014, and issued August 29, 2017. <http://www.google.se/patents/US9746850>
 */
 #[allow(dead_code)]
-pub fn gsd(levels: Vec<u16>, reduction: usize, n: usize) -> Vec<Array2<u16>> {
-    assert!(reduction > 1, "The level of reductions must be over 1");
-    assert!(n > 0, "n designs must be over 0");
+pub fn gsd(levels: Vec<u16>, reduction: usize, n: usize) -> Result<Vec<Array2<u16>>, String> {
+    assert!(reduction > 1, "The level of reductions must 2 or higher");
+    if reduction < 2 {
+        return Err("The level of reductions must 2 or higher".to_string());
+    } else if n < 1 {
+        return Err("n number of designs must be 1 or higher".to_string());
+    }
 
     let partitions: Vec<Vec<Vec<u16>>> = make_partitions(&levels, &reduction);
     let latin_square: Array2<u16> = make_latin_square(reduction);
@@ -404,11 +409,12 @@ pub fn gsd(levels: Vec<u16>, reduction: usize, n: usize) -> Vec<Array2<u16>> {
     let mut design_vec: Vec<Array2<u16>> = vec![];
 
     for oa in ortogonal_arrays.axis_iter(Axis(0)) {
-        let design: Array2<u16> = map_partitions_to_design(&partitions, &oa.to_owned());
+        // call the function with orthagonal arrays and forward the error if the function fails
+        let design: Array2<u16> = map_partitions_to_design(&partitions, &oa.to_owned())?;
         design_vec.push(design);
     }
 
-    design_vec.iter().take(n).cloned().collect()
+    Ok(design_vec.iter().take(n).cloned().collect())
 }
 
 fn make_partitions(factor_levels: &[u16], &num_partitions: &usize) -> Vec<Vec<Vec<u16>>> {
@@ -493,12 +499,12 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u
 fn map_partitions_to_design(
     partitions: &[Vec<Vec<u16>>],
     ortogonal_array: &Array2<u16>,
-) -> Array2<u16> {
-    assert!(
-        (partitions.len() == *ortogonal_array.iter().max().unwrap() as usize + 1
-            && *ortogonal_array.iter().min().unwrap() == 0),
-        "Orthogonal array indexing does not match partition structure"
-    );
+) -> Result<Array2<u16>, String> {
+    if !(partitions.len() == *ortogonal_array.iter().max().unwrap() as usize + 1
+        && *ortogonal_array.iter().min().unwrap() == 0)
+    {
+        return Err("Orthogonal array indexing does not match partition structure".to_string());
+    }
 
     let mut mappings: Vec<Vec<u16>> = Vec::new();
 
@@ -523,13 +529,16 @@ fn map_partitions_to_design(
         }
     }
 
+    if mappings.is_empty() {
+        return Err("Reduction is too large for the design size".to_string());
+    }
+
     // Convert mappings to Array2<u16>. You might need to adjust this part based on your specific requirements
-    // ! TODO panics here when reductions too high for the design, find out why
     let ncols = mappings[0].len();
     let flat: Vec<u16> = mappings.into_iter().flatten().collect();
     let nrows = flat.len() / ncols;
 
-    Array2::from_shape_vec((nrows, ncols), flat).unwrap() - 1
+    Ok(Array2::from_shape_vec((nrows, ncols), flat).unwrap() - 1)
 }
 
 // ##############################################################################################################
@@ -816,7 +825,7 @@ mod tests {
                 [1, 1, 0],
                 [1, 1, 2],
             ])];
-            assert_eq!(gsd(levels, reductions, n), expected);
+            assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
 
         #[test]
@@ -828,8 +837,7 @@ mod tests {
                 arr2(&[[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]]),
                 arr2(&[[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]]),
             ];
-
-            assert_eq!(gsd(levels, reductions, n), expected);
+            assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
 
         #[test]
@@ -861,7 +869,7 @@ mod tests {
                     [2, 2, 2],
                 ]),
             ];
-            assert_eq!(gsd(levels, reductions, n), expected);
+            assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
     }
 
