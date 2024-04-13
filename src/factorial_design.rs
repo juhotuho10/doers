@@ -48,6 +48,7 @@ Creates a general full-factorial design.
 Generate a full-factorial design for three factors with 2, 4, and 3 levels respectively:
 
 ```rust
+use doers::factorial_design::fullfact;
 let example_array = fullfact(vec![2, 4, 3]);
 //
 // resulting Array2<u16>:
@@ -138,6 +139,7 @@ Creates a 2-Level full-factorial design.
 Generate a full-factorial design for 3 factors:
 
 ```rust
+use doers::factorial_design::ff2n;
 let example_array = ff2n(3);
 //
 // resulting Array2<i32>:
@@ -189,6 +191,7 @@ Generates a Plackett-Burman design.
 
 Generate a design for 5 factors:
 ```
+use doers::factorial_design::pbdesign;
 let example_array = pbdesign(5);
 //
 // resulting Array2<i32>:
@@ -319,7 +322,8 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  A single design of 3, 4 and 4 levels with a reduction of 2 and
 
  ```
-let levels = Vec![3,4,4];
+use doers::factorial_design::gsd;
+let levels = vec![3,4,4];
 let reductions = 2;
 let n_arrays = 1;
 let example_array = gsd(levels, reductions, n_arrays);
@@ -354,7 +358,8 @@ let example_array = gsd(levels, reductions, n_arrays);
  Example of Two complementary designs:
 
  ```
-let levels = Vec![3,3];
+use doers::factorial_design::gsd;
+let levels = vec![3,3];
 let reductions = 2;
 let n_arrays = 2;
 let example_array = gsd(levels, reductions, n_arrays);
@@ -374,7 +379,8 @@ let example_array = gsd(levels, reductions, n_arrays);
  If the design fails a ValueError is raised:
 
  ```
-let levels = Vec![2,3];
+use doers::factorial_design::gsd;
+let levels = vec![2,3];
 let reductions = 5;
 let n_arrays = 1;
 let example_array = gsd(levels, reductions, n_arrays);
