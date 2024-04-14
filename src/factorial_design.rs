@@ -93,6 +93,7 @@ pub fn fullfact(levels: Vec<u16>) -> Result<Array2<u16>, String> {
     }
 
     let mut array: Array2<u16> = Array2::<u16>::zeros((num_lines as usize, n));
+
     let mut level_repeat = 1;
     let mut range_repeat = num_lines as usize;
 
@@ -790,56 +791,56 @@ mod tests {
     }
 
     mod functionality_tests {
-        use ndarray::arr2;
+        use ndarray::array;
 
         use super::*;
 
         #[test]
         fn fullfact_1() {
             let input = vec![];
-            let expected = arr2(&[[]]);
+            let expected = array![[]];
             assert_eq!(fullfact(input).unwrap(), expected);
         }
 
         #[test]
         fn fullfact_2() {
             let input = vec![1, 2];
-            let expected = arr2(&[[0, 0], [0, 1]]);
+            let expected = array![[0, 0], [0, 1]];
             assert_eq!(fullfact(input).unwrap(), expected);
         }
 
         #[test]
         fn fullfact_3() {
             let input = vec![1, 2, 3];
-            let expected = arr2(&[
+            let expected = array![
                 [0, 0, 0],
                 [0, 1, 0],
                 [0, 0, 1],
                 [0, 1, 1],
                 [0, 0, 2],
                 [0, 1, 2],
-            ]);
+            ];
             assert_eq!(fullfact(input).unwrap(), expected);
         }
 
         #[test]
         fn ff2n_1() {
             let input = 1;
-            let expected = arr2(&[[-1], [1]]);
+            let expected = array![[-1], [1]];
             assert_eq!(ff2n(input).unwrap(), expected);
         }
 
         #[test]
         fn ff2n_2() {
             let input = 2;
-            let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
+            let expected = array![[-1, -1], [1, -1], [-1, 1], [1, 1]];
             assert_eq!(ff2n(input).unwrap(), expected);
         }
 
         #[test]
         fn ff2n_3() {
             let input = 4;
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, -1, -1],
                 [1, -1, -1, -1],
                 [-1, 1, -1, -1],
@@ -856,7 +857,7 @@ mod tests {
                 [1, -1, 1, 1],
                 [-1, 1, 1, 1],
                 [1, 1, 1, 1],
-            ]);
+            ];
             assert_eq!(ff2n(input).unwrap(), expected);
         }
 
@@ -864,7 +865,7 @@ mod tests {
         fn pbdesign_1() {
             // uses k=0
             let input = 2;
-            let expected = arr2(&[[-1, -1], [1, -1], [-1, 1], [1, 1]]);
+            let expected = array![[-1, -1], [1, -1], [-1, 1], [1, 1]];
             assert_eq!(pbdesign(input), expected);
         }
 
@@ -872,7 +873,7 @@ mod tests {
         fn pbdesign_2() {
             // uses k=0
             let input = 4;
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, 1, -1],
                 [1, -1, -1, -1],
                 [-1, 1, -1, -1],
@@ -881,7 +882,7 @@ mod tests {
                 [1, -1, -1, 1],
                 [-1, 1, -1, 1],
                 [1, 1, 1, 1],
-            ]);
+            ];
             assert_eq!(pbdesign(input), expected);
         }
 
@@ -889,7 +890,7 @@ mod tests {
         fn pbdesign_3() {
             // uses k=1
             let input = 8;
-            let expected = arr2(&[
+            let expected = array![
                 [1, -1, 1, 1, 1, -1, -1, -1],
                 [-1, 1, 1, 1, -1, -1, -1, 1],
                 [1, 1, 1, -1, -1, -1, 1, -1],
@@ -902,7 +903,7 @@ mod tests {
                 [-1, -1, 1, -1, 1, 1, 1, -1],
                 [-1, 1, -1, 1, 1, 1, -1, -1],
                 [1, 1, 1, 1, 1, 1, 1, 1],
-            ]);
+            ];
             assert_eq!(pbdesign(input), expected);
         }
 
@@ -910,7 +911,7 @@ mod tests {
         fn pbdesign_4() {
             // uses k=2
             let input = 16;
-            let expected = arr2(&[
+            let expected = array![
                 [1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1, 1, 1],
                 [-1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1, 1],
                 [-1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1],
@@ -931,7 +932,7 @@ mod tests {
                 [-1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1, -1],
                 [-1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1],
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            ]);
+            ];
             assert_eq!(pbdesign(input), expected);
         }
 
@@ -940,14 +941,14 @@ mod tests {
             let levels = vec![2, 2, 3];
             let reductions = 2;
             let n = 1;
-            let expected = vec![arr2(&[
+            let expected = vec![array![
                 [0, 0, 0],
                 [0, 0, 2],
                 [0, 1, 1],
                 [1, 0, 1],
                 [1, 1, 0],
                 [1, 1, 2],
-            ])];
+            ]];
             assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
 
@@ -957,8 +958,8 @@ mod tests {
             let reductions = 4;
             let n = 2;
             let expected = vec![
-                arr2(&[[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]]),
-                arr2(&[[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]]),
+                array![[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]],
+                array![[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]],
             ];
             assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
@@ -969,7 +970,7 @@ mod tests {
             let reductions = 3;
             let n = 2;
             let expected = vec![
-                arr2(&[
+                array![
                     [0, 0, 0],
                     [0, 1, 1],
                     [0, 2, 2],
@@ -979,8 +980,8 @@ mod tests {
                     [2, 0, 2],
                     [2, 1, 0],
                     [2, 2, 1],
-                ]),
-                arr2(&[
+                ],
+                array![
                     [0, 0, 1],
                     [0, 1, 2],
                     [0, 2, 0],
@@ -990,7 +991,7 @@ mod tests {
                     [2, 0, 0],
                     [2, 1, 1],
                     [2, 2, 2],
-                ]),
+                ],
             ];
             assert_eq!(gsd(levels, reductions, n), Ok(expected));
         }
@@ -998,14 +999,14 @@ mod tests {
         #[test]
         fn fracfact_1() {
             let input = "";
-            let expected = arr2(&[[0]]);
+            let expected = array![[0]];
             assert_eq!(fracfact(input), expected);
         }
 
         #[test]
         fn fracfact_2() {
             let input = "a b c";
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, -1],
                 [1, -1, -1],
                 [-1, 1, -1],
@@ -1014,14 +1015,14 @@ mod tests {
                 [1, -1, 1],
                 [-1, 1, 1],
                 [1, 1, 1],
-            ]);
+            ];
             assert_eq!(fracfact(input), expected);
         }
 
         #[test]
         fn fracfact_3() {
             let input = "A B C -C";
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, -1, 1],
                 [1, -1, -1, 1],
                 [-1, 1, -1, 1],
@@ -1038,14 +1039,14 @@ mod tests {
                 [1, -1, 1, -1],
                 [-1, 1, 1, -1],
                 [1, 1, 1, -1],
-            ]);
+            ];
             assert_eq!(fracfact(input), expected);
         }
 
         #[test]
         fn fracfact_4() {
             let input = "a b c ab ac";
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, -1, 1, 1],
                 [1, -1, -1, -1, -1],
                 [-1, 1, -1, -1, 1],
@@ -1054,14 +1055,14 @@ mod tests {
                 [1, -1, 1, -1, 1],
                 [-1, 1, 1, -1, -1],
                 [1, 1, 1, 1, 1],
-            ]);
+            ];
             assert_eq!(fracfact(input), expected);
         }
 
         #[test]
         fn fracfact_5() {
             let input = "a b -c ab -ac";
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, 1, 1, -1],
                 [1, -1, 1, -1, 1],
                 [-1, 1, 1, -1, -1],
@@ -1070,14 +1071,14 @@ mod tests {
                 [1, -1, -1, -1, -1],
                 [-1, 1, -1, -1, 1],
                 [1, 1, -1, 1, -1],
-            ]);
+            ];
             assert_eq!(fracfact(input), expected);
         }
 
         #[test]
         fn fracfact_6() {
             let input = "a -b -abc c ac d -adc";
-            let expected = arr2(&[
+            let expected = array![
                 [-1, 1, 1, -1, 1, -1, 1],
                 [1, 1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, 1, -1, 1],
@@ -1094,25 +1095,25 @@ mod tests {
                 [1, 1, 1, 1, 1, 1, -1],
                 [-1, -1, 1, 1, -1, 1, 1],
                 [1, -1, -1, 1, 1, 1, -1],
-            ]);
+            ];
             assert_eq!(fracfact(input), expected);
         }
     }
 
     mod utilities_tests {
-        use ndarray::{arr1, arr2, Array1};
+        use ndarray::{array, Array1};
 
         use crate::factorial_design::{frexp, hankel, tests::array1_are_close, toeplitz};
 
         #[test]
         fn frexp_test() {
-            let levels: Array1<f32> = arr1(&[5., 5. / 12., 5. / 20.]);
+            let levels: Array1<f32> = array![5., 5. / 12., 5. / 20.];
             let (f, e) = frexp(&levels);
 
             let e = e.mapv(|x| x as f32);
 
-            let expected_f = arr1(&[0.625, 0.8333333, 0.5]);
-            let expected_e = arr1(&[3., -1., -1.]);
+            let expected_f = array![0.625, 0.8333333, 0.5];
+            let expected_e = array![3., -1., -1.];
             assert!(array1_are_close(&f, &expected_f, 0.01));
             assert!(array1_are_close(&e, &expected_e, 0.01));
         }
@@ -1121,7 +1122,7 @@ mod tests {
         fn toeplitz_test() {
             let input_1 = [-1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1];
             let input_2 = [-1, 1, -1, 1, 1, 1, -1, -1, -1, 1, -1];
-            let expected = arr2(&[
+            let expected = array![
                 [-1, 1, -1, 1, 1, 1, -1, -1, -1, 1, -1],
                 [-1, -1, 1, -1, 1, 1, 1, -1, -1, -1, 1],
                 [1, -1, -1, 1, -1, 1, 1, 1, -1, -1, -1],
@@ -1133,7 +1134,7 @@ mod tests {
                 [1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1],
                 [-1, 1, 1, 1, -1, -1, -1, 1, -1, -1, 1],
                 [1, -1, 1, 1, 1, -1, -1, -1, 1, -1, -1],
-            ]);
+            ];
 
             let result = toeplitz(&input_1, &input_2);
 
@@ -1144,7 +1145,7 @@ mod tests {
         fn hankel_test() {
             let input_1 = [-1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1];
             let input_2 = [1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1];
-            let expected = arr2(&[
+            let expected = array![
                 [-1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1],
                 [-1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1, -1],
                 [1, 1, -1, -1, -1, -1, 1, -1, 1, 1, 1, -1, -1, -1],
@@ -1159,7 +1160,7 @@ mod tests {
                 [1, 1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1],
                 [1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1, 1],
                 [-1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1],
-            ]);
+            ];
 
             let result = hankel(&input_1, &input_2);
             assert_eq!(result, expected);

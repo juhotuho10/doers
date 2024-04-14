@@ -372,7 +372,7 @@ pub fn star(n: usize, alpha: &str, center: Vec<u32>) -> Result<(Array2<f32>, f32
 mod tests {
     // Import the outer module to use the function to be tested.
     use super::*;
-    use ndarray::{arr2, Zip};
+    use ndarray::{array, Zip};
 
     fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
         // checks if all the Array2 elements are within tolerance
@@ -384,7 +384,7 @@ mod tests {
     #[test]
     fn bbdesign_1() {
         let input = 3;
-        let expected = arr2(&[
+        let expected = array![
             [-1, -1, 0],
             [1, -1, 0],
             [-1, 1, 0],
@@ -400,14 +400,14 @@ mod tests {
             [0, 0, 0],
             [0, 0, 0],
             [0, 0, 0],
-        ]);
+        ];
         assert_eq!(bbdesign(input), expected);
     }
 
     #[test]
     fn bbdesign_2() {
         let input = 5;
-        let expected = arr2(&[
+        let expected = array![
             [-1, -1, 0, 0, 0],
             [1, -1, 0, 0, 0],
             [-1, 1, 0, 0, 0],
@@ -454,7 +454,7 @@ mod tests {
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
-        ]);
+        ];
         assert_eq!(bbdesign(input), expected);
     }
 
@@ -462,7 +462,7 @@ mod tests {
     fn bbdesign_center_1() {
         let n = 3;
         let center = 1;
-        let expected = arr2(&[
+        let expected = array![
             [-1, -1, 0],
             [1, -1, 0],
             [-1, 1, 0],
@@ -476,7 +476,7 @@ mod tests {
             [0, -1, 1],
             [0, 1, 1],
             [0, 0, 0],
-        ]);
+        ];
         assert_eq!(bbdesign_center(n, center), expected);
     }
 
@@ -484,7 +484,7 @@ mod tests {
     fn bbdesign_center_2() {
         let n = 4;
         let center = 5;
-        let expected = arr2(&[
+        let expected = array![
             [-1, -1, 0, 0],
             [1, -1, 0, 0],
             [-1, 1, 0, 0],
@@ -514,7 +514,7 @@ mod tests {
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
-        ]);
+        ];
         assert_eq!(bbdesign_center(n, center), expected);
     }
 
@@ -524,7 +524,7 @@ mod tests {
         let center = vec![2, 2];
         let alpha = "orthogonal";
         let face = "circumscribed";
-        let expected: Array2<f32> = arr2(&[
+        let expected: Array2<f32> = array![
             [-1., -1.],
             [1., -1.],
             [-1., 1.],
@@ -537,7 +537,7 @@ mod tests {
             [0., 1.414],
             [0., 0.],
             [0., 0.],
-        ]);
+        ];
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
@@ -549,7 +549,7 @@ mod tests {
         let center = vec![4, 4];
         let alpha = "rotatable";
         let face = "circumscribed";
-        let expected: Array2<f32> = arr2(&[
+        let expected: Array2<f32> = array![
             [-1., -1., -1.],
             [1., -1., -1.],
             [-1., 1., -1.],
@@ -572,7 +572,7 @@ mod tests {
             [0., 0., 0.],
             [0., 0., 0.],
             [0., 0., 0.],
-        ]);
+        ];
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
@@ -584,7 +584,7 @@ mod tests {
         let center = vec![5, 5];
         let alpha = "orthogonal";
         let face = "inscribed";
-        let expected: Array2<f32> = arr2(&[
+        let expected: Array2<f32> = array![
             [-0.44935852, -0.44935852, -0.44935852, -0.44935852],
             [0.44935852, -0.44935852, -0.44935852, -0.44935852],
             [-0.44935852, 0.44935852, -0.44935852, -0.44935852],
@@ -619,7 +619,7 @@ mod tests {
             [0., 0., 0., 0.],
             [0., 0., 0., 0.],
             [0., 0., 0., 0.],
-        ]);
+        ];
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
@@ -631,7 +631,7 @@ mod tests {
         let center = vec![3, 4];
         let alpha = "rotatable";
         let face = "inscribed";
-        let expected: Array2<f32> = arr2(&[
+        let expected: Array2<f32> = array![
             [-0.707, -0.707],
             [0.707, -0.707],
             [-0.707, 0.707],
@@ -647,7 +647,7 @@ mod tests {
             [0., 0.],
             [0., 0.],
             [0., 0.],
-        ]);
+        ];
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
@@ -659,7 +659,7 @@ mod tests {
         let center = vec![4, 1];
         let alpha = "orthogonal";
         let face = "faced";
-        let expected: Array2<f32> = arr2(&[
+        let expected: Array2<f32> = array![
             [-1., -1., -1.],
             [1., -1., -1.],
             [-1., 1., -1.],
@@ -679,7 +679,7 @@ mod tests {
             [0., 0., -1.],
             [0., 0., 1.],
             [0., 0., 0.],
-        ]);
+        ];
         let return_array = ccdesign(n, center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));

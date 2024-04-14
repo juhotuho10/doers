@@ -959,7 +959,7 @@ mod tests {
 
     mod utilities_tests {
 
-        use ndarray::{arr1, arr2, Array2};
+        use ndarray::{array, Array2};
 
         use crate::random_design::{
             corrcoef, pairwise_euclidean_dist,
@@ -969,17 +969,17 @@ mod tests {
         #[test]
         fn euclidean_distance_test() {
             // making sure that the re-implementation of scipy.spatial.distance.pdist is correct
-            let test_arr = arr2(&[
+            let test_arr = array![
                 [-1., -2., -3.],
                 [1., 2., 3.],
                 [10., -15., 32.],
                 [-100., 340., 32.],
                 [-342., 421., -523.],
-            ]);
-            let expected = arr1(&[
+            ];
+            let expected = array![
                 7.483315, 38.923, 357.7569, 752.0705, 34.799427, 353.9576, 754.90796, 371.65173,
                 788.6856, 610.86005,
-            ]);
+            ];
             let result_array = pairwise_euclidean_dist(&test_arr);
             assert!(array1_are_close(&result_array, &expected, 0.01));
         }
@@ -987,18 +987,18 @@ mod tests {
         #[test]
         fn correlation_test() {
             // making sure that the re-implementation of np.corrcoef is correct
-            let test_arr: Array2<f32> = arr2(&[
+            let test_arr: Array2<f32> = array![
                 [-1., -2., -3.],
                 [1., 2., 3.],
                 [10., -15., 32.],
                 [-100., 340., 32.],
                 [-342., 421., -523.],
-            ]);
-            let expected = arr2(&[
+            ];
+            let expected = array![
                 [1.0, -0.89002377, 0.9418991],
                 [-0.89002377, 1.0, -0.6858651],
                 [0.9418991, -0.6858651, 1.0],
-            ]);
+            ];
 
             let result_array = corrcoef(&test_arr.t().to_owned());
             assert!(array2_are_close(&result_array, &expected, 0.01));
