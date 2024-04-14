@@ -192,7 +192,7 @@ Generates a Plackett-Burman design.
 # Examples
 
 Generate a design for 5 factors:
-```
+```rust
 use doers::factorial_design::pbdesign;
 let example_array = pbdesign(5);
 //
@@ -323,7 +323,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
 
  A single design of 3, 4 and 4 levels with a reduction of 2 and
 
- ```
+```rust
 use doers::factorial_design::gsd;
 let levels = vec![3,4,4];
 let reductions = 2;
@@ -359,7 +359,7 @@ let example_array = gsd(levels, reductions, n_arrays);
 
  Example of Two complementary designs:
 
- ```
+```rust
 use doers::factorial_design::gsd;
 let levels = vec![3,3];
 let reductions = 2;
@@ -380,7 +380,7 @@ let example_array = gsd(levels, reductions, n_arrays);
 
  If the design fails a ValueError is raised:
 
- ```
+```rust
 use doers::factorial_design::gsd;
 let levels = vec![2,3];
 let reductions = 5;
@@ -558,19 +558,19 @@ Create a 2-level fractional-factorial design with a generator string.
 
 # Notes
 
-    In `design` we define the main factors of the experiment and the factors
-    whose levels are the products of the main factors. For example, if
+The argument `&str` defines the main factors of the experiment and the factors
+whose levels are the products of the main factors. For example, if
 
-        let design = "a b ab"
+let design = "a b ab"
 
-    then "a" and "b" are the main factors, while the 3rd factor is the product
-    of the first two.
+then "a" and "b" are the main factors, while the 3rd factor is the product of the first two.
 
 # Examples
 
 Generate a conditional design where we have designs for a b and c
 but also have a conditional one that is the negative product of a and b
-```
+
+```rust
 use doers::factorial_design::fracfact;
 let example_array = fracfact("a b c -ab");
 //
@@ -588,7 +588,7 @@ let example_array = fracfact("a b c -ab");
 ```
 */
 #[allow(dead_code)]
-fn fracfact(design: &str) -> Array2<i32> {
+pub fn fracfact(design: &str) -> Array2<i32> {
     let design = design.to_lowercase();
     let design = design.as_str();
     let separator_regex = Regex::new(r"\+|\s|\-").expect("regex error");
