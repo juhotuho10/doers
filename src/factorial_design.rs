@@ -591,26 +591,33 @@ let example_array = fracfact("a b c -ab");
 pub fn fracfact(design: &str) -> Array2<i32> {
     let design = design.to_lowercase();
     let design = design.as_str();
+
+    // separate letters and remove "-" and "+" from them
     let separator_regex = Regex::new(r"\+|\s|\-").expect("regex error");
     let char_splits: Vec<&str> = separator_regex
         .split(design)
         .filter(|x| !x.is_empty())
         .collect();
+
+    // indexes of letters main factor letters (singular letters)
     let single_letter_i = char_splits
         .iter()
         .enumerate()
         .filter_map(|(i, &x)| if x.len() == 1 { Some(i) } else { None })
         .collect_vec();
 
+    // indexes of letter combinations
     let multi_letter_i = char_splits
         .iter()
         .enumerate()
         .filter_map(|(i, &x)| if x.len() != 1 { Some(i) } else { None })
         .collect_vec();
 
+    // new splits with the "+" and "-" included with the letters
     let separator_regex = Regex::new(r"\s").expect("regex error");
     let splits: Vec<&str> = separator_regex.split(design).collect();
 
+    // indexes that are marked negative
     let minus_reg = Regex::new(r"\-").expect("regex error");
     let minus_i = splits
         .iter()
@@ -618,16 +625,18 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         .filter_map(|(i, &x)| if minus_reg.is_match(x) { Some(i) } else { None })
         .collect_vec();
 
+    // ff2n design of the main factors
     let h_single = ff2n(single_letter_i.len()).unwrap();
 
+    // assign the designs at the correct indexes in the final design
     let mut h_combined: Array2<i32> = Array::zeros((h_single.shape()[0], splits.len()));
     for (array, i) in h_single.axis_iter(Axis(1)).zip(&single_letter_i) {
         let mut into = h_combined.slice_mut(s![.., *i]);
         into.assign(&array);
     }
 
+    // creating a map to map the main factor chars to their indexes in the main design
     let mut char_to_i: HashMap<char, usize> = HashMap::new();
-
     for i in single_letter_i {
         char_to_i.insert(char_splits[i].chars().next().unwrap(), i);
     }
@@ -635,8 +644,11 @@ pub fn fracfact(design: &str) -> Array2<i32> {
     for i in multi_letter_i {
         let combination = char_splits[i];
         let letters = combination.chars().collect_vec();
+
+        // indices for all the individual chars in letter combiantions to get their design from the h_combined
         let indices = letters.iter().map(|x| char_to_i[x]).collect_vec();
 
+        // multiply all the designs together
         let mut multiplied = h_combined.slice(s![.., indices[0]]).to_owned();
 
         for index in indices.iter().skip(1) {
@@ -647,6 +659,7 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         h_combined.slice_mut(s![.., i]).assign(&multiplied);
     }
 
+    // apply the "-" to make correct columns negative
     for i in minus_i {
         let mut slice = h_combined.slice_mut(s![.., i]);
         slice.mapv_inplace(|x| -x);
