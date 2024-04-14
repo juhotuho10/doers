@@ -649,10 +649,10 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         let indices = letters.iter().map(|x| char_to_i[x]).collect_vec();
 
         // multiply all the designs together
-        let mut multiplied = h_combined.slice(s![.., indices[0]]).to_owned();
+        let mut multiplied = Array1::ones(h_combined.shape()[0]);
 
-        for index in indices.iter().skip(1) {
-            let other_slice = h_combined.slice(s![.., *index]).to_owned();
+        for index in indices {
+            let other_slice = h_combined.slice(s![.., index]).to_owned();
             multiplied = multiplied * other_slice;
         }
 
