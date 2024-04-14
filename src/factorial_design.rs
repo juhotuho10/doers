@@ -566,10 +566,6 @@ Create a 2-level fractional-factorial design with a generator string.
     then "a" and "b" are the main factors, while the 3rd factor is the product
     of the first two.
 
-# Errors
-
-    R
-
 # Examples
 
 Generate a conditional design where we have designs for a b and c
