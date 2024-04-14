@@ -160,15 +160,10 @@ let example_array = ff2n(3);
 pub fn ff2n(n: usize) -> Result<Array2<i32>, String> {
     let vec: Vec<u16> = vec![2; n];
 
-    let return_vec = fullfact(vec);
+    let return_vec = fullfact(vec)?;
 
-    match return_vec {
-        Ok(return_vec) => {
-            let return_vec = return_vec.mapv(|x| x as i32);
-            Ok(2 * return_vec - 1)
-        }
-        Err(return_vec) => Err(return_vec),
-    }
+    let return_vec = return_vec.mapv(|x| x as i32);
+    Ok(2 * return_vec - 1)
 }
 
 /**
