@@ -1,14 +1,13 @@
 mod factorial_design;
 mod random_design;
 mod response_surface_design;
-use doers::factorial_design::gsd;
-use std::vec;
+use ndarray::arr1;
 
 fn main() {
-    let levels = vec![3, 3, 3];
-    let reductions = 8;
-    let n_arrays = 1;
-    let example_array = gsd(levels, reductions, n_arrays);
+    let array_1 = arr1(&[1, 2, 3]);
+    let array_2 = arr1(&[-3, 4, 5]);
 
-    println!("{:?}", example_array);
+    let array_3 = array_1 * array_2;
+
+    println!("{}", array_3);
 }

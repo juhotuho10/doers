@@ -10,16 +10,8 @@ import itertools
 from scipy import spatial
 from pyDOE2.doe_lhs import lhs
 
-input = [[-1.,-2.,-3.], [1.,2.,3.], [10., -15., 32.], [-100., 340., 32.], [-342. , 421., -523.]]
-Hcandidate = np.array(input).astype(np.float32)
 
-
-result = pbdesign(8).astype(int)
+result = fracfact("1 2 3 13").astype(int)
 
 for i in result:
-    print(list(i))
-
-result = pbdesign(16).astype(int)
-
-for i in result:
-    print(list(i))
+    print(f"{list(i)}")

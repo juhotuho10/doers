@@ -1,7 +1,8 @@
 use itertools::Itertools;
 use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayViewMut1, Axis};
+use regex::Regex;
+use std::collections::HashMap;
 use std::vec;
-
 /*
 This code was originally published by the following individuals for use with Scilab:
     Copyright (C) 2012 - 2013 - Michael Baudin
@@ -541,6 +542,123 @@ fn map_partitions_to_design(
     Ok(Array2::from_shape_vec((nrows, ncols), flat).unwrap() - 1)
 }
 
+/**
+Create a 2-level fractional-factorial design with a generator string.
+
+# Parameter
+
+- design: `&str`:
+  A string, consisting of lowercase, uppercase letters or a negative operator "-"
+  though all charactes will be changed into lower case
+
+# Returns
+
+- Array2<i32>
+  ff2n design of the individual characters as well as the combinatory designs for the characters
+
+# Notes
+
+    In `design` we define the main factors of the experiment and the factors
+    whose levels are the products of the main factors. For example, if
+
+        let design = "a b ab"
+
+    then "a" and "b" are the main factors, while the 3rd factor is the product
+    of the first two.
+
+# Errors
+
+    R
+
+# Examples
+
+Generate a conditional design where we have designs for a b and c
+but also have a conditional one that is the negative product of a and b
+```
+use doers::factorial_design::fracfact;
+let example_array = fracfact("a b c -ab");
+//
+// resulting Array2<i32>:
+//
+//          a   b   c  -ab
+// array([[-1, -1, -1, -1],
+//        [ 1, -1, -1,  1],
+//        [-1,  1, -1,  1],
+//        [ 1,  1, -1, -1],
+//        [-1, -1,  1, -1],
+//        [ 1, -1,  1,  1],
+//        [-1,  1,  1,  1],
+//        [ 1,  1,  1, -1]])
+```
+*/
+#[allow(dead_code)]
+fn fracfact(design: &str) -> Array2<i32> {
+    let design = design.to_lowercase();
+    let design = design.as_str();
+    let separator_regex = Regex::new(r"\+|\s|\-").expect("regex error");
+    let char_splits: Vec<&str> = separator_regex
+        .split(design)
+        .filter(|x| !x.is_empty())
+        .collect();
+    let single_letter_i = char_splits
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &x)| if x.len() == 1 { Some(i) } else { None })
+        .collect_vec();
+
+    let multi_letter_i = char_splits
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &x)| if x.len() != 1 { Some(i) } else { None })
+        .collect_vec();
+
+    let separator_regex = Regex::new(r"\s").expect("regex error");
+    let splits: Vec<&str> = separator_regex.split(design).collect();
+
+    let minus_reg = Regex::new(r"\-").expect("regex error");
+    let minus_i = splits
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &x)| if minus_reg.is_match(x) { Some(i) } else { None })
+        .collect_vec();
+
+    let h_single = ff2n(single_letter_i.len()).unwrap();
+
+    let mut h_combined: Array2<i32> = Array::zeros((h_single.shape()[0], splits.len()));
+    for (array, i) in h_single.axis_iter(Axis(1)).zip(&single_letter_i) {
+        let mut into = h_combined.slice_mut(s![.., *i]);
+        into.assign(&array);
+    }
+
+    let mut char_to_i: HashMap<char, usize> = HashMap::new();
+
+    for i in single_letter_i {
+        char_to_i.insert(char_splits[i].chars().next().unwrap(), i);
+    }
+
+    for i in multi_letter_i {
+        let combination = char_splits[i];
+        let letters = combination.chars().collect_vec();
+        let indices = letters.iter().map(|x| char_to_i[x]).collect_vec();
+
+        let mut multiplied = h_combined.slice(s![.., indices[0]]).to_owned();
+
+        for index in indices.iter().skip(1) {
+            let other_slice = h_combined.slice(s![.., *index]).to_owned();
+            multiplied = multiplied * other_slice;
+        }
+
+        h_combined.slice_mut(s![.., i]).assign(&multiplied);
+    }
+
+    for i in minus_i {
+        let mut slice = h_combined.slice_mut(s![.., i]);
+        slice.mapv_inplace(|x| -x);
+    }
+
+    h_combined
+}
+
 // ##############################################################################################################
 // -------------------------------------------------- Utils -----------------------------------------------------
 // ##############################################################################################################
@@ -656,6 +774,7 @@ fn hankel(c: &[i32], r: &[i32]) -> Array2<i32> {
 
 #[cfg(test)]
 mod tests {
+
     // Testing the functions with a known output
     use super::*;
     use ndarray::Zip;
@@ -870,6 +989,109 @@ mod tests {
                 ]),
             ];
             assert_eq!(gsd(levels, reductions, n), Ok(expected));
+        }
+
+        #[test]
+        fn fracfact_1() {
+            let input = "";
+            let expected = arr2(&[[0]]);
+            assert_eq!(fracfact(input), expected);
+        }
+
+        #[test]
+        fn fracfact_2() {
+            let input = "a b c";
+            let expected = arr2(&[
+                [-1, -1, -1],
+                [1, -1, -1],
+                [-1, 1, -1],
+                [1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [-1, 1, 1],
+                [1, 1, 1],
+            ]);
+            assert_eq!(fracfact(input), expected);
+        }
+
+        #[test]
+        fn fracfact_3() {
+            let input = "A B C -C";
+            let expected = arr2(&[
+                [-1, -1, -1, 1],
+                [1, -1, -1, 1],
+                [-1, 1, -1, 1],
+                [1, 1, -1, 1],
+                [-1, -1, 1, 1],
+                [1, -1, 1, 1],
+                [-1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [-1, -1, -1, -1],
+                [1, -1, -1, -1],
+                [-1, 1, -1, -1],
+                [1, 1, -1, -1],
+                [-1, -1, 1, -1],
+                [1, -1, 1, -1],
+                [-1, 1, 1, -1],
+                [1, 1, 1, -1],
+            ]);
+            assert_eq!(fracfact(input), expected);
+        }
+
+        #[test]
+        fn fracfact_4() {
+            let input = "a b c ab ac";
+            let expected = arr2(&[
+                [-1, -1, -1, 1, 1],
+                [1, -1, -1, -1, -1],
+                [-1, 1, -1, -1, 1],
+                [1, 1, -1, 1, -1],
+                [-1, -1, 1, 1, -1],
+                [1, -1, 1, -1, 1],
+                [-1, 1, 1, -1, -1],
+                [1, 1, 1, 1, 1],
+            ]);
+            assert_eq!(fracfact(input), expected);
+        }
+
+        #[test]
+        fn fracfact_5() {
+            let input = "a b -c ab -ac";
+            let expected = arr2(&[
+                [-1, -1, 1, 1, -1],
+                [1, -1, 1, -1, 1],
+                [-1, 1, 1, -1, -1],
+                [1, 1, 1, 1, 1],
+                [-1, -1, -1, 1, 1],
+                [1, -1, -1, -1, -1],
+                [-1, 1, -1, -1, 1],
+                [1, 1, -1, 1, -1],
+            ]);
+            assert_eq!(fracfact(input), expected);
+        }
+
+        #[test]
+        fn fracfact_6() {
+            let input = "a -b -abc c ac d -adc";
+            let expected = arr2(&[
+                [-1, 1, 1, -1, 1, -1, 1],
+                [1, 1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, 1, -1, 1],
+                [1, -1, 1, -1, -1, -1, -1],
+                [-1, 1, -1, 1, -1, -1, -1],
+                [1, 1, 1, 1, 1, -1, 1],
+                [-1, -1, 1, 1, -1, -1, -1],
+                [1, -1, -1, 1, 1, -1, 1],
+                [-1, 1, 1, -1, 1, 1, -1],
+                [1, 1, -1, -1, -1, 1, 1],
+                [-1, -1, -1, -1, 1, 1, -1],
+                [1, -1, 1, -1, -1, 1, 1],
+                [-1, 1, -1, 1, -1, 1, 1],
+                [1, 1, 1, 1, 1, 1, -1],
+                [-1, -1, 1, 1, -1, 1, 1],
+                [1, -1, -1, 1, 1, 1, -1],
+            ]);
+            assert_eq!(fracfact(input), expected);
         }
     }
 
