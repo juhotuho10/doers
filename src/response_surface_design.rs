@@ -212,12 +212,7 @@ Generate a CCD for 3 factors:
 ```
 */
 #[allow(dead_code)]
-pub fn ccdesign(
-    n: usize,
-    center: Vec<u32>,
-    alpha: &str,
-    face: &str,
-) -> Result<Array2<f32>, String> {
+pub fn ccdesign(n: usize, center: &[u32], alpha: &str, face: &str) -> Result<Array2<f32>, String> {
     if n < 2 {
         return Err("n must be 2 or higher".to_string());
     }
@@ -232,32 +227,32 @@ pub fn ccdesign(
         ("orthogonal", "inscribed") => {
             // Orthogonal Design
             // Inscribed CCD
-            (_, a) = star(n, "orthogonal", center.clone()).unwrap();
+            (_, a) = star(n, "orthogonal", center).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, "faced", vec![1, 1]).unwrap();
+            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
         }
         ("rotatable", "inscribed") => {
             // Rotatable Design
             // Inscribed CCD
-            (_, a) = star(n, "rotatable", vec![1, 1]).unwrap();
+            (_, a) = star(n, "rotatable", &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, "faced", vec![1, 1]).unwrap();
+            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
         }
         ("orthogonal", "circumscribed") => {
             // Orthogonal Design
             // Inscribed CCD
-            (h2, _) = star(n, "orthogonal", center.clone()).unwrap();
+            (h2, _) = star(n, "orthogonal", center).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
         }
         ("rotatable", "circumscribed") => {
             // Rotatable Design
             // Circumscribed CCD
-            (h2, _) = star(n, "rotatable", vec![1, 1]).unwrap();
+            (h2, _) = star(n, "rotatable", &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
         }
         (_, "faced") => {
             // Faced CCD
-            (h2, _) = star(n, "faced", vec![1, 1]).unwrap();
+            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
         }
         (_, _) => {
@@ -324,7 +319,7 @@ Generate star points for a 3-variable design:
 //        [ 0.0,  0.0,  1.0]])
 ```
 */
-pub fn star(n: usize, alpha: &str, center: Vec<u32>) -> Result<(Array2<f32>, f32), String> {
+pub fn star(n: usize, alpha: &str, center: &[u32]) -> Result<(Array2<f32>, f32), String> {
     // Star points at the center of each face of the factorial
 
     let a: f32;
@@ -521,7 +516,7 @@ mod tests {
     #[test]
     fn ccdesign_o_c() {
         let n = 2;
-        let center = vec![2, 2];
+        let center = [2, 2];
         let alpha = "orthogonal";
         let face = "circumscribed";
         let expected: Array2<f32> = array![
@@ -538,7 +533,7 @@ mod tests {
             [0., 0.],
             [0., 0.],
         ];
-        let return_array = ccdesign(n, center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
     }
@@ -546,7 +541,7 @@ mod tests {
     #[test]
     fn ccdesign_r_c() {
         let n = 3;
-        let center = vec![4, 4];
+        let center = [4, 4];
         let alpha = "rotatable";
         let face = "circumscribed";
         let expected: Array2<f32> = array![
@@ -573,7 +568,7 @@ mod tests {
             [0., 0., 0.],
             [0., 0., 0.],
         ];
-        let return_array = ccdesign(n, center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
     }
@@ -581,7 +576,7 @@ mod tests {
     #[test]
     fn ccdesign_o_i() {
         let n = 4;
-        let center = vec![5, 5];
+        let center = [5, 5];
         let alpha = "orthogonal";
         let face = "inscribed";
         let expected: Array2<f32> = array![
@@ -620,7 +615,7 @@ mod tests {
             [0., 0., 0., 0.],
             [0., 0., 0., 0.],
         ];
-        let return_array = ccdesign(n, center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
     }
@@ -628,7 +623,7 @@ mod tests {
     #[test]
     fn ccdesign_r_i() {
         let n = 2;
-        let center = vec![3, 4];
+        let center = [3, 4];
         let alpha = "rotatable";
         let face = "inscribed";
         let expected: Array2<f32> = array![
@@ -648,7 +643,7 @@ mod tests {
             [0., 0.],
             [0., 0.],
         ];
-        let return_array = ccdesign(n, center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
     }
@@ -656,7 +651,7 @@ mod tests {
     #[test]
     fn ccdesign_f() {
         let n = 3;
-        let center = vec![4, 1];
+        let center = [4, 1];
         let alpha = "orthogonal";
         let face = "faced";
         let expected: Array2<f32> = array![
@@ -680,7 +675,7 @@ mod tests {
             [0., 0., 1.],
             [0., 0., 0.],
         ];
-        let return_array = ccdesign(n, center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
     }

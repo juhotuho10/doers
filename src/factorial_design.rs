@@ -51,7 +51,7 @@ Generate a full-factorial design for three factors with 2, 4, and 3 levels respe
 
 ```rust
 use doers::factorial_design::fullfact;
-let example_array = fullfact(vec![2, 4, 3]);
+let example_array = fullfact(&[2, 4, 3]);
 //
 // resulting Array2<u16>:
 //
@@ -82,7 +82,7 @@ let example_array = fullfact(vec![2, 4, 3]);
 ```
  */
 
-pub fn fullfact(levels: Vec<u16>) -> Result<Array2<u16>, String> {
+pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
     let n = levels.len();
     let num_lines: u64 = levels.iter().map(|&level| level as u64).product();
 
@@ -161,7 +161,7 @@ let example_array = ff2n(3);
 pub fn ff2n(n: usize) -> Result<Array2<i32>, String> {
     let vec: Vec<u16> = vec![2; n];
 
-    let return_vec = fullfact(vec)?;
+    let return_vec = fullfact(&vec)?;
 
     let return_vec = return_vec.mapv(|x| x as i32);
     Ok(2 * return_vec - 1)
@@ -321,10 +321,10 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
 
 ```rust
 use doers::factorial_design::gsd;
-let levels = vec![3,4,4];
+let levels = [3,4,4];
 let reductions = 2;
 let n_arrays = 1;
-let example_array = gsd(levels, reductions, n_arrays);
+let example_array = gsd(&levels, reductions, n_arrays);
 //
 // resulting Vec<Array2<u16>>:
 // [[[0, 0, 0],
@@ -357,10 +357,10 @@ let example_array = gsd(levels, reductions, n_arrays);
 
 ```rust
 use doers::factorial_design::gsd;
-let levels = vec![3,3];
+let levels = [3,3];
 let reductions = 2;
 let n_arrays = 2;
-let example_array = gsd(levels, reductions, n_arrays);
+let example_array = gsd(&levels, reductions, n_arrays);
 //
 // resulting Vec<Array2<u16>>:
 // [[[0, 0],
@@ -378,10 +378,10 @@ let example_array = gsd(levels, reductions, n_arrays);
 
 ```rust
 use doers::factorial_design::gsd;
-let levels = vec![2,3];
+let levels = [2,3];
 let reductions = 5;
 let n_arrays = 1;
-let example_array = gsd(levels, reductions, n_arrays);
+let example_array = gsd(&levels, reductions, n_arrays);
  // Returns an Err: Err("Reduction is too large for the design size")
  ```
 
@@ -391,7 +391,7 @@ let example_array = gsd(levels, reductions, n_arrays);
  - Vikstrom, Ludvig, et al. Computer-implemented systems and methods for generating generalized fractional designs. US9746850 B2, filed May 9, 2014, and issued August 29, 2017. <http://www.google.se/patents/US9746850>
 */
 #[allow(dead_code)]
-pub fn gsd(levels: Vec<u16>, reduction: usize, n: usize) -> Result<Vec<Array2<u16>>, String> {
+pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>>, String> {
     assert!(reduction > 1, "The level of reductions must 2 or higher");
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
@@ -399,7 +399,7 @@ pub fn gsd(levels: Vec<u16>, reduction: usize, n: usize) -> Result<Vec<Array2<u1
         return Err("n number of designs must be 1 or higher".to_string());
     }
 
-    let partitions: Vec<Vec<Vec<u16>>> = make_partitions(&levels, &reduction);
+    let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, &reduction);
     let latin_square: Array2<u16> = make_latin_square(reduction);
     let ortogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len());
 
@@ -799,14 +799,14 @@ mod tests {
         fn fullfact_1() {
             let input = vec![];
             let expected = array![[]];
-            assert_eq!(fullfact(input).unwrap(), expected);
+            assert_eq!(fullfact(&input).unwrap(), expected);
         }
 
         #[test]
         fn fullfact_2() {
             let input = vec![1, 2];
             let expected = array![[0, 0], [0, 1]];
-            assert_eq!(fullfact(input).unwrap(), expected);
+            assert_eq!(fullfact(&input).unwrap(), expected);
         }
 
         #[test]
@@ -820,7 +820,7 @@ mod tests {
                 [0, 0, 2],
                 [0, 1, 2],
             ];
-            assert_eq!(fullfact(input).unwrap(), expected);
+            assert_eq!(fullfact(&input).unwrap(), expected);
         }
 
         #[test]
@@ -938,7 +938,7 @@ mod tests {
 
         #[test]
         fn gsd_1() {
-            let levels = vec![2, 2, 3];
+            let levels = [2, 2, 3];
             let reductions = 2;
             let n = 1;
             let expected = vec![array![
@@ -949,24 +949,24 @@ mod tests {
                 [1, 1, 0],
                 [1, 1, 2],
             ]];
-            assert_eq!(gsd(levels, reductions, n), Ok(expected));
+            assert_eq!(gsd(&levels, reductions, n), Ok(expected));
         }
 
         #[test]
         fn gsd_2() {
-            let levels = vec![3, 3, 2];
+            let levels = [3, 3, 2];
             let reductions = 4;
             let n = 2;
             let expected = vec![
                 array![[0, 0, 0], [0, 1, 1], [1, 0, 1], [2, 2, 0]],
                 array![[0, 0, 1], [1, 2, 0], [2, 1, 0], [2, 2, 1]],
             ];
-            assert_eq!(gsd(levels, reductions, n), Ok(expected));
+            assert_eq!(gsd(&levels, reductions, n), Ok(expected));
         }
 
         #[test]
         fn gsd_3() {
-            let levels = vec![3, 3, 3];
+            let levels = [3, 3, 3];
             let reductions = 3;
             let n = 2;
             let expected = vec![
@@ -993,7 +993,7 @@ mod tests {
                     [2, 2, 2],
                 ],
             ];
-            assert_eq!(gsd(levels, reductions, n), Ok(expected));
+            assert_eq!(gsd(&levels, reductions, n), Ok(expected));
         }
 
         #[test]
