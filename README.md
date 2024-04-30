@@ -9,9 +9,7 @@ Rust crate for generating Design Of Experiments designs
 
 TODO
 -------
-- Improved documentation
 - Finish implementing all core functionality from pyDOE
-- Better test coverage that includes all utility functions
 - Maybe add more newer design patters and / or other functional to help with generating experiments 
 
 
