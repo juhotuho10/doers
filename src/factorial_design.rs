@@ -135,7 +135,7 @@ Creates a 2-Level full-factorial design.
 
 # Errors
 
-- Raises a `ValueError` if `n` is too large (in the thousands) and 2^n causes u64 to overflow
+- Returns an error string if `n` is too large (in the thousands) and 2^n causes u64 to overflow
 
 # Example
 
@@ -182,8 +182,8 @@ Generates a Plackett-Burman design.
 
 # Errors
 
-- Raises a `ValueError` if:
-  - The input is valid, or if the design construction fails. The design can fail if `reduction` is too large compared to the values of `levels`. Note: It seems there might be a typo in the original text regarding `reduction` and `levels` since they are not parameters of this function. It's possible this section was mistakenly included from another function's documentation.
+- Panics if:
+  - The design fails when `reduction` is too large compared to the values of `levels`.
 
 # Examples
 
@@ -223,25 +223,27 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
             break;
         }
     }
-    let exp = exponents[k] - 1;
-    let mut h: Array2<i32>;
 
-    match k {
-        0 => {
-            h = Array2::ones((1, 1));
-        }
+    let exp = exponents[k] - 1;
+
+    let mut h_array: Array2<i32> = match k {
+        0 => Array2::ones((1, 1)),
         1 => {
             let top: Array2<i32> = Array2::ones((1, 12));
+
             let bottom_left: Array2<i32> = Array2::ones((11, 1));
             let bottom_right: Array2<i32> = toeplitz(
                 &[-1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1],
                 &[-1, 1, -1, 1, 1, 1, -1, -1, -1, 1, -1],
             );
+
             let bottom: Array2<i32> = concatenate![Axis(1), bottom_left, bottom_right];
-            h = concatenate![Axis(0), top, bottom];
+
+            concatenate![Axis(0), top, bottom]
         }
         2 => {
             let top: Array2<i32> = Array2::ones((1, 20));
+
             let bottom_left: Array2<i32> = Array2::ones((19, 1));
             let bottom_right: Array2<i32> = hankel(
                 &[
@@ -251,21 +253,23 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
                     1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1, -1, -1,
                 ],
             );
+
             let bottom: Array2<i32> = concatenate![Axis(1), bottom_left, bottom_right];
-            h = concatenate![Axis(0), top, bottom];
+
+            concatenate![Axis(0), top, bottom]
         }
         _ => unreachable!("Invalid value for k, this shouldn't happen"),
     };
 
     for _ in 0..exp {
-        let h_top: Array2<i32> = concatenate![Axis(1), h.clone(), h.clone()];
-        let h_bottom: Array2<i32> = concatenate![Axis(1), h.clone(), -h.clone()];
-        h = concatenate![Axis(0), h_top, h_bottom];
+        let h_top: Array2<i32> = concatenate![Axis(1), h_array.clone(), h_array.clone()];
+        let h_bottom: Array2<i32> = concatenate![Axis(1), h_array.clone(), -h_array.clone()];
+        h_array = concatenate![Axis(0), h_top, h_bottom];
     }
 
     // Reduce the size of the matrix as needed
-    let keep = keep.min(h.shape()[0]);
-    let h: Array2<i32> = h.slice(s![.., 1..=keep]).to_owned();
+    let keep = keep.min(h_array.shape()[0]);
+    let h: Array2<i32> = h_array.slice(s![.., 1..=keep]).to_owned();
 
     // Flip the matrix upside down
     let h_flipped: Array2<i32> = h.slice(s![..;-1, ..]).to_owned();
@@ -280,24 +284,24 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  - `levels`: array-like
    Number of factor levels per factor in design.
 
- - `reduction`: int
+ - `reduction`: usize
    Reduction factor (greater than 1). A larger `reduction` means fewer
    experiments in the design and more possible complementary designs.
 
- - `n`: int
-   Number of complementary GSD-designs (default is 1). The complementary
+ - `n`: usize
+   Number of complementary GSD-designs. The complementary
    designs are balanced analogous to fold-over in two-level fractional
    factorial designs.
 
  # Returns
 
- - `Vec<Array2<u16>>` n amount of complementary Array2<u16> matrices that have complementary designs,
+ - `Vec<Array2<u16>>` `n` amount of complementary Array2<u16> matrices that have complementary designs,
     where the design size will be reduced down by reduction size
 
- # Raises
+ # Error
 
- - `ValueError`
-   If input is valid or if design construction fails. The design can fail
+ - Returns a error string:
+   If input is invalid or if design construction fails. The design can fail
    if `reduction` is too large compared to values of `levels`.
 
  # Notes
@@ -368,6 +372,7 @@ let example_array = gsd(&levels, reductions, n_arrays);
 //  [2, 0],
 //  [2, 2],
 //  [1, 1]],
+
 //  [[0, 1],
 //  [2, 1],
 //  [1, 0],

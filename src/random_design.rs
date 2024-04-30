@@ -365,19 +365,14 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
             .map(|row| mean_of_first_two(row.as_slice().unwrap()))
             .collect();
 
-        let min_l = argmin_ignore_nan(&avg_dist);
+        let min_l = argmin_ignore_nan(&avg_dist).expect("We should have min index");
 
-        match min_l {
-            Some(min_l) => {
-                for j in 0..d_ij.ncols() {
-                    d_ij[[min_l, j]] = f32::NAN;
-                    d_ij[[j, min_l]] = f32::NAN;
-                }
-
-                index_rm[i] = min_l;
-            }
-            None => panic!(),
+        for j in 0..d_ij.ncols() {
+            d_ij[[min_l, j]] = f32::NAN;
+            d_ij[[j, min_l]] = f32::NAN;
         }
+
+        index_rm[i] = min_l;
     }
 
     rdpoints = delete_rows(rdpoints, index_rm);

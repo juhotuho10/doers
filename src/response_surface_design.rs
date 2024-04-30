@@ -156,8 +156,6 @@ Generates a Central Composite Design (CCD).
 - `n`: `usize`
   The number of factors in the design.
 
-# Optional Parameters
-
 - `center`: `Vec<u32>`
   A vector of two integers representing the number of center points in each block of the design. Defaults to `[4, 4]`.
 
@@ -279,8 +277,6 @@ Generates the star points for various design matrices.
 - `n`: `usize`
   The number of variables in the design.
 
-# Optional Parameters
-
 - `alpha`: `&str`
   Specifies the scaling of the star points. Available options include:
   - `"faced"`: Default. Star points are placed at the center of each face of the factorial space.
@@ -302,7 +298,7 @@ Generates the star points for various design matrices.
 
 
 # Error
-- Returns a error string if alpha string isn't correct
+- Returns a error string if `alpha` string isn't correct
 
 # Example
 
@@ -325,31 +321,36 @@ pub fn star(n: usize, alpha: &str, center: &[u32]) -> Result<(Array2<f32>, f32),
     let a: f32;
     let alpha = alpha.to_lowercase();
 
-    let a: f32 = match alpha.as_str() {
-        "faced" => 1.0,
-        "orthogonal" => {
-            let nc = u32::pow(2, n as u32) as f32; // factorial points
-            let nco = center[0] as f32; // center points to factorial
-            let na = 2. * n as f32; // axial points
-            let nao = center[1] as f32; // center points to axial design
-                                        // value of alpha in orthogonal design
-            let n = n as f32;
-            a = (n * (1. + nao / na) / (1. + nco / nc)).sqrt();
-            a
-        }
-        "rotatable" => {
-            let nc = i32::pow(2, n as u32) as f32; // number of factorial points
-            a = nc.powf(0.25); // value of alpha in rotatable design
-            a
-        }
-        _ => return Err("Error".to_string()),
-    };
+    let a: f32 =
+        match alpha.as_str() {
+            "faced" => 1.0,
+            "orthogonal" => {
+                let nc = u32::pow(2, n as u32) as f32; // factorial points
+                let nco = center[0] as f32; // center points to factorial
+                let na = 2. * n as f32; // axial points
+                let nao = center[1] as f32; // center points to axial design
+                                            // value of alpha in orthogonal design
+                let n = n as f32;
+                a = (n * (1. + nao / na) / (1. + nco / nc)).sqrt();
+                a
+            }
+            "rotatable" => {
+                let nc = i32::pow(2, n as u32) as f32; // number of factorial points
+                a = nc.powf(0.25); // value of alpha in rotatable design
+                a
+            }
+            _ => return Err(
+                "Incorrect alpha string, has to be one of: ['faced', 'orthogonal', 'rotatable']"
+                    .to_string(),
+            ),
+        };
 
     // Create the actual matrix now.
     let mut h_array: Array2<f32> = Array2::<f32>::zeros((2 * n, n));
     let arr = Array::from_vec(vec![-1.0, 1.0]);
     for i in 0..n {
-        let mut slice = h_array.slice_mut(s![2 * i..2 * i + 2, i]);
+        let index = 2 * i;
+        let mut slice = h_array.slice_mut(s![index..index + 2, i]);
         // Use assign here to copy data from `arr` into `h_array`
         slice.assign(&arr);
     }
