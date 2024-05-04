@@ -23,12 +23,14 @@ Converted to Rust and worked on by:
 */
 
 // Enum for star() function for the alpha variable
+#[allow(dead_code)]
 pub enum Alpha {
     Orthogonal,
     Rotatable,
     Faced,
 }
 // Enum for star() function for the Face variable
+#[allow(dead_code)]
 pub enum Face {
     Inscribed,
     Circumscribed,
@@ -684,6 +686,15 @@ mod tests {
             [0., 0., 1.],
             [0., 0., 0.],
         ];
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+
+        assert!(array2_are_close(&return_array, &expected, 0.01));
+
+        let n = 3;
+        let center = [4, 1];
+        let alpha = Alpha::Faced;
+        let face = Face::Circumscribed;
+
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
         assert!(array2_are_close(&return_array, &expected, 0.01));
