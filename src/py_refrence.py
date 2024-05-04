@@ -15,6 +15,3 @@ result = fracfact("1 2 3 13").astype(int)
 
 for i in result:
     print(f"{list(i)}")
-
-
-pbdesign

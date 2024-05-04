@@ -1,5 +1,6 @@
 use ndarray::{concatenate, s, Array, Array2, Axis};
 use std::{cmp::max, vec};
+
 /*
 This code was originally published by the following individuals for use with Scilab:
     Copyright (C) 2012 - 2013 - Michael Baudin
@@ -20,6 +21,18 @@ Converted to Rust and worked on by:
     Copyright (c) 2024, Juho Naatula
     git repo: https://github.com/juhotuho10/doers
 */
+
+// Enum for star() function for the alpha variable
+pub enum Alpha {
+    Orthogonal,
+    Rotatable,
+    Faced,
+}
+// Enum for star() function for the Face variable
+pub enum Face {
+    Inscribed,
+    Circumscribed,
+}
 
 /**
 Creates a Box-Behnken design.
@@ -87,6 +100,11 @@ Generates a Box-Behnken design.
 - `mat`: `Array2<f64>`
   Returns the design matrix as a 2D array. The matrix represents the Box-Behnken design for the specified number of factors, with levels coded as -1, 0, and 1. The design includes all combinations of two levels at a time, with the third factor set to 0, and additional center points.
 
+# Errors
+
+- Returns a error string if n is too small
+
+
 # Example
 
 Generate a Box-Behnken design for 3 factors:
@@ -112,8 +130,10 @@ Generate a Box-Behnken design for 3 factors:
 ```
 */
 #[allow(dead_code)]
-pub fn bbdesign(n: usize) -> Array2<i32> {
-    assert!(n >= 3, "Number of variables must be at least 3");
+pub fn bbdesign(n: usize) -> Result<Array2<i32>, String> {
+    if n < 3 {
+        return Err("n size must be 3 or higher".to_string());
+    }
 
     let mut h_array = bb_algorithm(n);
     let points = [0, 0, 0, 3, 3, 6, 6, 6, 8, 9, 10, 12, 12, 13, 14, 15, 16];
@@ -123,7 +143,7 @@ pub fn bbdesign(n: usize) -> Array2<i32> {
     let center_matrix = Array2::<i32>::zeros((center, n));
     h_array = concatenate![Axis(0), h_array, center_matrix];
 
-    h_array
+    Ok(h_array)
 }
 
 /// computation algorithm for bbdesign
@@ -159,16 +179,16 @@ Generates a Central Composite Design (CCD).
 - `center`: `Vec<u32>`
   A vector of two integers representing the number of center points in each block of the design. Defaults to `[4, 4]`.
 
-- `alpha`: `O&str`
+- `alpha`: `Alpha`
   Specifies the effect of alpha on the variance. Possible values are:
-  - `"orthogonal"`.
-  - `"rotatable"`.
+  - `Alpha::Orthogonal`.
+  - `Alpha::Rotatable`.
+  - `Alpha::Faced`: Star points are at the center of each face of the factorial space, requiring 3 levels of each factor.
 
-- `face`: `&str`
+- `face`: `Face`
   Describes the relation between the start points and the corner (factorial) points. Options are:
-  - `"circumscribed"``: Original form with star points at a distance `alpha` from the center.
-  - `"inscribed"`: Factor settings are the star points, creating a design within those limits.
-  - `"faced"`: Star points are at the center of each face of the factorial space, requiring 3 levels of each factor.
+  - `Face::Circumscribed`: Original form with star points at a distance `alpha` from the center.
+  - `Face::Inscribed`: Factor settings are the star points, creating a design within those limits.
 
 # Returns
 
@@ -177,7 +197,7 @@ Generates a Central Composite Design (CCD).
 
 # Errors
 
-- Returns a error string if invalid `alpha` or `face` strings are provided
+- Returns a error string if n is too small
 
 # Example
 
@@ -210,55 +230,46 @@ Generate a CCD for 3 factors:
 ```
 */
 #[allow(dead_code)]
-pub fn ccdesign(n: usize, center: &[u32], alpha: &str, face: &str) -> Result<Array2<f32>, String> {
+pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
     if n < 2 {
         return Err("n must be 2 or higher".to_string());
     }
 
-    let alpha = alpha.to_lowercase();
-    let face = face.to_lowercase();
     let h1: Array2<f32>;
     let h2: Array2<f32>;
     let a: f32;
 
-    match (alpha.as_str(), face.as_str()) {
-        ("orthogonal", "inscribed") => {
+    match (&alpha, &face) {
+        (Alpha::Orthogonal, Face::Inscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (_, a) = star(n, "orthogonal", center).unwrap();
+            (_, a) = star(n, Alpha::Orthogonal, center).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
         }
-        ("rotatable", "inscribed") => {
+        (Alpha::Rotatable, Face::Inscribed) => {
             // Rotatable Design
             // Inscribed CCD
-            (_, a) = star(n, "rotatable", &[1, 1]).unwrap();
+            (_, a) = star(n, Alpha::Rotatable, &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
         }
-        ("orthogonal", "circumscribed") => {
+        (Alpha::Orthogonal, Face::Circumscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (h2, _) = star(n, "orthogonal", center).unwrap();
+            (h2, _) = star(n, Alpha::Orthogonal, center).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
         }
-        ("rotatable", "circumscribed") => {
+        (Alpha::Rotatable, Face::Circumscribed) => {
             // Rotatable Design
             // Circumscribed CCD
-            (h2, _) = star(n, "rotatable", &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Rotatable, &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
         }
-        (_, "faced") => {
+        (Alpha::Faced, _) => {
             // Faced CCD
-            (h2, _) = star(n, "faced", &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
             h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
-        }
-        (_, _) => {
-            return Err(
-                "Invalid input, alpha must be one of ['orthogonal', 'rotatable']\n
-                and face must be one of ['inscribed', 'circumscribed', 'faced']"
-                    .to_string(),
-            )
         }
     };
 
@@ -279,9 +290,9 @@ Generates the star points for various design matrices.
 
 - `alpha`: `&str`
   Specifies the scaling of the star points. Available options include:
-  - `"faced"`: Default. Star points are placed at the center of each face of the factorial space.
-  - `"orthogonal"`: Star points are placed to preserve orthogonality.
-  - `"rotatable"`: Star points are placed to achieve rotatability of the design.
+  - `Alpha::Faced`: Star points are placed at the center of each face of the factorial space.
+  - `Alpha::Orthogonal`: Star points are placed to preserve orthogonality.
+  - `Alpha::Rotatable`: Star points are placed to achieve rotatability of the design.
 
 - `center`: `Vec<u32>`
   A vector containing two integers that indicate the number of center points assigned in each block of the response surface design. Defaults to `[1, 1]`.
@@ -315,39 +326,36 @@ Generate star points for a 3-variable design:
 //        [ 0.0,  0.0,  1.0]])
 ```
 */
-pub fn star(n: usize, alpha: &str, center: &[u32]) -> Result<(Array2<f32>, f32), String> {
+pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> Result<(Array2<f32>, f32), String> {
     // Star points at the center of each face of the factorial
 
     let a: f32;
-    let alpha = alpha.to_lowercase();
 
-    let a: f32 =
-        match alpha.as_str() {
-            "faced" => 1.0,
-            "orthogonal" => {
-                let nc = u32::pow(2, n as u32) as f32; // factorial points
-                let nco = center[0] as f32; // center points to factorial
-                let na = 2. * n as f32; // axial points
-                let nao = center[1] as f32; // center points to axial design
-                                            // value of alpha in orthogonal design
-                let n = n as f32;
-                a = (n * (1. + nao / na) / (1. + nco / nc)).sqrt();
-                a
-            }
-            "rotatable" => {
-                let nc = i32::pow(2, n as u32) as f32; // number of factorial points
-                a = nc.powf(0.25); // value of alpha in rotatable design
-                a
-            }
-            _ => return Err(
-                "Incorrect alpha string, has to be one of: ['faced', 'orthogonal', 'rotatable']"
-                    .to_string(),
-            ),
-        };
+    let a: f32 = match alpha {
+        Alpha::Faced => 1.0,
+        Alpha::Orthogonal => {
+            let nc = u32::pow(2, n as u32) as f32; // factorial points
+            let nco = center[0] as f32; // center points to factorial
+            let na = 2. * n as f32; // axial points
+            let nao = center[1] as f32; // center points to axial design
+                                        // value of alpha in orthogonal design
+            let n = n as f32;
+            a = (n * (1. + nao / na) / (1. + nco / nc)).sqrt();
+            a
+        }
+        Alpha::Rotatable => {
+            let nc = i32::pow(2, n as u32) as f32; // number of factorial points
+            a = nc.powf(0.25); // value of alpha in rotatable design
+            a
+        }
+    };
 
     // Create the actual matrix now.
     let mut h_array: Array2<f32> = Array2::<f32>::zeros((2 * n, n));
-    let arr = Array::from_vec(vec![-1.0, 1.0]);
+    let arr: ndarray::prelude::ArrayBase<
+        ndarray::OwnedRepr<f32>,
+        ndarray::prelude::Dim<[usize; 1]>,
+    > = Array::from_vec(vec![-1.0, 1.0]);
     for i in 0..n {
         let index = 2 * i;
         let mut slice = h_array.slice_mut(s![index..index + 2, i]);
@@ -397,7 +405,7 @@ mod tests {
             [0, 0, 0],
             [0, 0, 0],
         ];
-        assert_eq!(bbdesign(input), expected);
+        assert_eq!(bbdesign(input).unwrap(), expected);
     }
 
     #[test]
@@ -451,7 +459,7 @@ mod tests {
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
         ];
-        assert_eq!(bbdesign(input), expected);
+        assert_eq!(bbdesign(input).unwrap(), expected);
     }
 
     #[test]
@@ -518,8 +526,8 @@ mod tests {
     fn ccdesign_o_c() {
         let n = 2;
         let center = [2, 2];
-        let alpha = "orthogonal";
-        let face = "circumscribed";
+        let alpha = Alpha::Orthogonal;
+        let face = Face::Circumscribed;
         let expected: Array2<f32> = array![
             [-1., -1.],
             [1., -1.],
@@ -543,8 +551,8 @@ mod tests {
     fn ccdesign_r_c() {
         let n = 3;
         let center = [4, 4];
-        let alpha = "rotatable";
-        let face = "circumscribed";
+        let alpha = Alpha::Rotatable;
+        let face = Face::Circumscribed;
         let expected: Array2<f32> = array![
             [-1., -1., -1.],
             [1., -1., -1.],
@@ -578,8 +586,8 @@ mod tests {
     fn ccdesign_o_i() {
         let n = 4;
         let center = [5, 5];
-        let alpha = "orthogonal";
-        let face = "inscribed";
+        let alpha = Alpha::Orthogonal;
+        let face = Face::Inscribed;
         let expected: Array2<f32> = array![
             [-0.44935852, -0.44935852, -0.44935852, -0.44935852],
             [0.44935852, -0.44935852, -0.44935852, -0.44935852],
@@ -625,8 +633,8 @@ mod tests {
     fn ccdesign_r_i() {
         let n = 2;
         let center = [3, 4];
-        let alpha = "rotatable";
-        let face = "inscribed";
+        let alpha = Alpha::Rotatable;
+        let face = Face::Inscribed;
         let expected: Array2<f32> = array![
             [-0.707, -0.707],
             [0.707, -0.707],
@@ -653,8 +661,8 @@ mod tests {
     fn ccdesign_f() {
         let n = 3;
         let center = [4, 1];
-        let alpha = "orthogonal";
-        let face = "faced";
+        let alpha = Alpha::Faced;
+        let face = Face::Inscribed;
         let expected: Array2<f32> = array![
             [-1., -1., -1.],
             [1., -1., -1.],
