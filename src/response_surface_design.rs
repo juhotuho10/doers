@@ -24,14 +24,18 @@ Converted to Rust and worked on by:
 
 // Enum for star() function for the alpha variable
 #[allow(dead_code)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Alpha {
+    #[default]
     Orthogonal,
     Rotatable,
     Faced,
 }
 // Enum for star() function for the Face variable
 #[allow(dead_code)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Face {
+    #[default]
     Inscribed,
     Circumscribed,
 }
