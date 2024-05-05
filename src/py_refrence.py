@@ -10,10 +10,10 @@ import itertools
 from scipy import spatial
 from pyDOE2.doe_lhs import lhs
 
-n = 2
-center = [7,1]
-alpha = "Orthogonal"
-face = "Circumscribed"
+n = 5
+center = [1, 1]
+alpha = "rotatable"
+face = "circumscribed"
 
 result = ccdesign(n, center, alpha, face).astype(float)
 

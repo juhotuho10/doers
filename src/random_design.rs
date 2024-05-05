@@ -943,6 +943,7 @@ mod tests {
 
             for col in arr.axis_iter(Axis(1)) {
                 let sorted_col = sort_ndarray_array1(col.to_owned());
+
                 assert!(array1_are_close(
                     &center,
                     &sorted_col,
@@ -995,8 +996,17 @@ mod tests {
                 [0.9418991, -0.6858651, 1.0],
             ];
 
-            let result_array = corrcoef(&test_arr.t().to_owned());
-            assert!(array2_are_close(&result_array, &expected, 0.01));
+            let return_array = corrcoef(&test_arr.t().to_owned());
+
+            assert_eq!(
+                return_array.shape(),
+                expected.shape(),
+                "array shapes do not match, {:?} vs expected: {:?}",
+                return_array.shape(),
+                expected.shape()
+            );
+
+            assert!(array2_are_close(&return_array, &expected, 0.01));
         }
     }
 }

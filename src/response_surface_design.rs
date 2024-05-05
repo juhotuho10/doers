@@ -377,6 +377,7 @@ mod tests {
 
     fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
         // checks if all the Array2 elements are within tolerance
+        assert_eq!(a.shape(), b.shape(), "array shapes must be the same");
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
@@ -402,7 +403,9 @@ mod tests {
             [0, 0, 0],
             [0, 0, 0],
         ];
-        assert_eq!(bbdesign(input).unwrap(), expected);
+
+        let return_array = bbdesign(input).unwrap();
+        assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
     #[test]
@@ -456,7 +459,9 @@ mod tests {
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
         ];
-        assert_eq!(bbdesign(input).unwrap(), expected);
+
+        let return_array = bbdesign(input).unwrap();
+        assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
     #[test]
@@ -478,7 +483,9 @@ mod tests {
             [0, 1, 1],
             [0, 0, 0],
         ];
-        assert_eq!(bbdesign_center(n, center), expected);
+
+        let return_array = bbdesign_center(n, center);
+        assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
     #[test]
@@ -516,7 +523,9 @@ mod tests {
             [0, 0, 0, 0],
             [0, 0, 0, 0],
         ];
-        assert_eq!(bbdesign_center(n, center), expected);
+
+        let return_array = bbdesign_center(n, center);
+        assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
     #[test]
@@ -543,7 +552,18 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
-        assert!(array2_are_close(&return_array, &expected, 0.01));
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
     }
 
     #[test]
@@ -572,7 +592,17 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
-        assert!(array2_are_close(&return_array, &expected, 0.01));
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
     }
 
     #[test]
@@ -610,7 +640,116 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
-        assert!(array2_are_close(&return_array, &expected, 0.01));
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
+    }
+
+    #[test]
+    fn ccdesign_r_c_2() {
+        let n = 5;
+        let center = [15, 19];
+        let alpha = Alpha::Rotatable;
+        let face = Face::Circumscribed;
+        let expected: Array2<f32> = array![
+            [-1.0, -1.0, -1.0, -1.0, -1.0],
+            [1.0, -1.0, -1.0, -1.0, -1.0],
+            [-1.0, 1.0, -1.0, -1.0, -1.0],
+            [1.0, 1.0, -1.0, -1.0, -1.0],
+            [-1.0, -1.0, 1.0, -1.0, -1.0],
+            [1.0, -1.0, 1.0, -1.0, -1.0],
+            [-1.0, 1.0, 1.0, -1.0, -1.0],
+            [1.0, 1.0, 1.0, -1.0, -1.0],
+            [-1.0, -1.0, -1.0, 1.0, -1.0],
+            [1.0, -1.0, -1.0, 1.0, -1.0],
+            [-1.0, 1.0, -1.0, 1.0, -1.0],
+            [1.0, 1.0, -1.0, 1.0, -1.0],
+            [-1.0, -1.0, 1.0, 1.0, -1.0],
+            [1.0, -1.0, 1.0, 1.0, -1.0],
+            [-1.0, 1.0, 1.0, 1.0, -1.0],
+            [1.0, 1.0, 1.0, 1.0, -1.0],
+            [-1.0, -1.0, -1.0, -1.0, 1.0],
+            [1.0, -1.0, -1.0, -1.0, 1.0],
+            [-1.0, 1.0, -1.0, -1.0, 1.0],
+            [1.0, 1.0, -1.0, -1.0, 1.0],
+            [-1.0, -1.0, 1.0, -1.0, 1.0],
+            [1.0, -1.0, 1.0, -1.0, 1.0],
+            [-1.0, 1.0, 1.0, -1.0, 1.0],
+            [1.0, 1.0, 1.0, -1.0, 1.0],
+            [-1.0, -1.0, -1.0, 1.0, 1.0],
+            [1.0, -1.0, -1.0, 1.0, 1.0],
+            [-1.0, 1.0, -1.0, 1.0, 1.0],
+            [1.0, 1.0, -1.0, 1.0, 1.0],
+            [-1.0, -1.0, 1.0, 1.0, 1.0],
+            [1.0, -1.0, 1.0, 1.0, 1.0],
+            [-1.0, 1.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0, 1.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [-2.378414230005442, 0.0, 0.0, 0.0, 0.0],
+            [2.378414230005442, 0.0, 0.0, 0.0, 0.0],
+            [0.0, -2.378414230005442, 0.0, 0.0, 0.0],
+            [0.0, 2.378414230005442, 0.0, 0.0, 0.0],
+            [0.0, 0.0, -2.378414230005442, 0.0, 0.0],
+            [0.0, 0.0, 2.378414230005442, 0.0, 0.0],
+            [0.0, 0.0, 0.0, -2.378414230005442, 0.0],
+            [0.0, 0.0, 0.0, 2.378414230005442, 0.0],
+            [0.0, 0.0, 0.0, 0.0, -2.378414230005442],
+            [0.0, 0.0, 0.0, 0.0, 2.378414230005442],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+        ];
+        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
     }
 
     #[test]
@@ -655,7 +794,17 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
-        assert!(array2_are_close(&return_array, &expected, 0.01));
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
     }
 
     #[test]
@@ -683,7 +832,17 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
-        assert!(array2_are_close(&return_array, &expected, 0.01));
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
+        assert!(
+            array2_are_close(&return_array, &expected, 0.01),
+            "array values do not match"
+        );
     }
 
     #[test]
@@ -726,9 +885,16 @@ mod tests {
         ];
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
         assert!(
             array2_are_close(&return_array, &expected, 0.01),
-            "test 1 failed"
+            "array values do not match"
         );
 
         let n = 3;
@@ -738,9 +904,16 @@ mod tests {
 
         let return_array = ccdesign(n, &center, alpha, face).unwrap();
 
+        assert_eq!(
+            return_array.shape(),
+            expected.shape(),
+            "array shapes do not match, {:?} vs expected: {:?}",
+            return_array.shape(),
+            expected.shape()
+        );
         assert!(
             array2_are_close(&return_array, &expected, 0.01),
-            "test 2 failed"
+            "array values do not match"
         );
     }
 }
