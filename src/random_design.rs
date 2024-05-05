@@ -807,7 +807,7 @@ mod tests {
         let shape_arr = avg_array.shape();
 
         let samples = shape_arr[0];
-        let n = shape_arr[1];
+        let n: usize = shape_arr[1];
 
         // make Array2 of the same size with 0.5 elements
         let center = Array2::from_elem((samples, n), 0.5);
@@ -972,7 +972,10 @@ mod tests {
                 788.6856, 610.86005,
             ];
             let result_array = pairwise_euclidean_dist(&test_arr);
-            assert!(arrays_are_close(&result_array, &expected, 0.01));
+            assert!(
+                arrays_are_close(&result_array, &expected, 0.01),
+                "array values do not match"
+            );
         }
 
         #[test]
@@ -1001,7 +1004,10 @@ mod tests {
                 expected.shape()
             );
 
-            assert!(arrays_are_close(&return_array, &expected, 0.01));
+            assert!(
+                arrays_are_close(&return_array, &expected, 0.01),
+                "array values do not match"
+            );
         }
     }
 }

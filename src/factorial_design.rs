@@ -787,6 +787,7 @@ mod tests {
     // Testing the functions with a known output
     use super::*;
     use ndarray::{ArrayBase, Data, Dimension, Zip};
+
     fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
     // checks if all the Array1 elements are within tolerance
     where
@@ -1123,8 +1124,14 @@ mod tests {
 
             let expected_f = array![0.625, 0.8333333, 0.5];
             let expected_e = array![3., -1., -1.];
-            assert!(arrays_are_close(&f, &expected_f, 0.01));
-            assert!(arrays_are_close(&e, &expected_e, 0.01));
+            assert!(
+                arrays_are_close(&f, &expected_f, 0.01),
+                "array values do not match"
+            );
+            assert!(
+                arrays_are_close(&e, &expected_e, 0.01),
+                "array values do not match"
+            );
         }
 
         #[test]
