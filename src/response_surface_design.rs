@@ -261,19 +261,19 @@ pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Ar
         (Alpha::Orthogonal, Face::Circumscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (h2, _) = star(n, alpha, center).unwrap();
             h1 = ff2n(n)?.mapv(|x| x as f32);
+            (h2, _) = star(n, alpha, center).unwrap();
         }
         (Alpha::Rotatable, Face::Circumscribed) => {
             // Rotatable Design
             // Circumscribed CCD
-            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
             h1 = ff2n(n)?.mapv(|x| x as f32);
+            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
         }
         (Alpha::Faced, _) => {
             // Faced Design
-            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
             h1 = ff2n(n)?.mapv(|x| x as f32);
+            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
         }
     };
 
