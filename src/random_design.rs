@@ -771,7 +771,7 @@ mod tests {
 
     // Import the outer module to use the function to be tested.
     use super::*;
-    use ndarray::{Array3, Zip};
+    use ndarray::{Array3, ArrayBase, Data, Dimension};
 
     // ######################################### helper functions ######################################
     fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
@@ -780,15 +780,13 @@ mod tests {
         Array1::from(vec)
     }
 
-    fn array1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
-        // checks if all the Array1 elements are within tolerance
-        Zip::from(a)
-            .and(b)
-            .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
-    }
-
-    fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
-        // checks if all the Array2 elements are within tolerance
+    fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
+    // checks if all the Array1 elements are within tolerance
+    where
+        S: Data<Elem = f32>,
+        D: Dimension,
+    {
+        assert_eq!(a.shape(), b.shape(), "array shapes must be the same");
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
@@ -815,7 +813,7 @@ mod tests {
         let center = Array2::from_elem((samples, n), 0.5);
 
         // make sure that the Array2s are close to eachother
-        array2_are_close(&center, &avg_array.to_owned(), tolerance)
+        arrays_are_close(&center, &avg_array.to_owned(), tolerance)
     }
 
     // ######################################### tests #################################################
@@ -944,7 +942,7 @@ mod tests {
             for col in arr.axis_iter(Axis(1)) {
                 let sorted_col = sort_ndarray_array1(col.to_owned());
 
-                assert!(array1_are_close(
+                assert!(arrays_are_close(
                     &center,
                     &sorted_col,
                     0.5 / (samples as f32)
@@ -957,10 +955,7 @@ mod tests {
 
         use ndarray::{array, Array2};
 
-        use crate::random_design::{
-            corrcoef, pairwise_euclidean_dist,
-            tests::{array1_are_close, array2_are_close},
-        };
+        use crate::random_design::{corrcoef, pairwise_euclidean_dist, tests::arrays_are_close};
 
         #[test]
         fn euclidean_distance_test() {
@@ -977,7 +972,7 @@ mod tests {
                 788.6856, 610.86005,
             ];
             let result_array = pairwise_euclidean_dist(&test_arr);
-            assert!(array1_are_close(&result_array, &expected, 0.01));
+            assert!(arrays_are_close(&result_array, &expected, 0.01));
         }
 
         #[test]
@@ -1006,7 +1001,7 @@ mod tests {
                 expected.shape()
             );
 
-            assert!(array2_are_close(&return_array, &expected, 0.01));
+            assert!(arrays_are_close(&return_array, &expected, 0.01));
         }
     }
 }

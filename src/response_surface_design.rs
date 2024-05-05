@@ -373,10 +373,14 @@ pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> Result<(Array2<f32>, f32)
 mod tests {
     // Import the outer module to use the function to be tested.
     use super::*;
-    use ndarray::{array, Zip};
+    use ndarray::{array, ArrayBase, Data, Dimension, Zip};
 
-    fn array2_are_close(a: &Array2<f32>, b: &Array2<f32>, tolerance: f32) -> bool {
-        // checks if all the Array2 elements are within tolerance
+    fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
+    // checks if all the Array1 elements are within tolerance
+    where
+        S: Data<Elem = f32>,
+        D: Dimension,
+    {
         assert_eq!(a.shape(), b.shape(), "array shapes must be the same");
         Zip::from(a)
             .and(b)
@@ -561,7 +565,7 @@ mod tests {
         );
 
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -600,7 +604,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -648,7 +652,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -747,7 +751,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -802,7 +806,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -840,7 +844,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }
@@ -893,7 +897,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
 
@@ -912,7 +916,7 @@ mod tests {
             expected.shape()
         );
         assert!(
-            array2_are_close(&return_array, &expected, 0.01),
+            arrays_are_close(&return_array, &expected, 0.01),
             "array values do not match"
         );
     }

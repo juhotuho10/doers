@@ -786,9 +786,14 @@ mod tests {
 
     // Testing the functions with a known output
     use super::*;
-    use ndarray::Zip;
-    fn array1_are_close(a: &Array1<f32>, b: &Array1<f32>, tolerance: f32) -> bool {
-        // checks if all the Array1 elements are within tolerance
+    use ndarray::{ArrayBase, Data, Dimension, Zip};
+    fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
+    // checks if all the Array1 elements are within tolerance
+    where
+        S: Data<Elem = f32>,
+        D: Dimension,
+    {
+        assert_eq!(a.shape(), b.shape(), "array shapes must be the same");
         Zip::from(a)
             .and(b)
             .fold(true, |acc, &a, &b| acc && (a - b).abs() <= tolerance)
@@ -1107,7 +1112,7 @@ mod tests {
     mod utilities_tests {
         use ndarray::{array, Array1};
 
-        use crate::factorial_design::{frexp, hankel, tests::array1_are_close, toeplitz};
+        use crate::factorial_design::{frexp, hankel, tests::arrays_are_close, toeplitz};
 
         #[test]
         fn frexp_test() {
@@ -1118,8 +1123,8 @@ mod tests {
 
             let expected_f = array![0.625, 0.8333333, 0.5];
             let expected_e = array![3., -1., -1.];
-            assert!(array1_are_close(&f, &expected_f, 0.01));
-            assert!(array1_are_close(&e, &expected_e, 0.01));
+            assert!(arrays_are_close(&f, &expected_f, 0.01));
+            assert!(arrays_are_close(&e, &expected_e, 0.01));
         }
 
         #[test]
