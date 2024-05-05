@@ -283,7 +283,7 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
     for _ in 0..iterations {
         let random_int = rng.gen_range(0..u64::MAX);
         let h_candidate = lhs_classic(n, samples, random_int);
-        let corr = corrcoef(&h_array.t().to_owned());
+        let corr: Array2<f32> = corrcoef(&h_array.t().to_owned());
         let max_corr = corr
             .iter()
             .filter(|&&x| x != 1.0)
@@ -598,7 +598,7 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 This function is useful in data processing and analysis tasks where it is necessary to compute statistics on datasets that may include missing or undefined values.
 */
 fn mean_of_first_two(values: &[f32]) -> f32 {
-    let valid_values: Vec<f32> = values.iter().filter(|&&v| !v.is_nan()).cloned().collect();
+    let valid_values: Vec<f32> = values.iter().filter(|v| !v.is_nan()).cloned().collect();
     let total: f32 = valid_values.iter().take(2).sum();
     total / valid_values.len() as f32
 }

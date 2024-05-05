@@ -10,8 +10,13 @@ import itertools
 from scipy import spatial
 from pyDOE2.doe_lhs import lhs
 
+n = 2
+center = [7,1]
+alpha = "Orthogonal"
+face = "Circumscribed"
 
-result = fracfact("1 2 3 13").astype(int)
+result = ccdesign(n, center, alpha, face).astype(float)
 
 for i in result:
     print(f"{list(i)}")
+
