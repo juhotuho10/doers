@@ -1,12 +1,12 @@
 mod factorial_design;
 mod random_design;
 mod response_surface_design;
-use ndarray::array;
+
+use crate::response_surface_design::{Alpha, Face};
 
 fn main() {
-    let array_1 = array![1, 2, 3];
-    let array_2 = array![-3, 4, 5];
-    let array_3 = array_1 * array_2;
+    let array_1 =
+        response_surface_design::ccdesign(3, &[3, 3, 3], Alpha::Orthogonal, Face::Circumscribed);
 
-    println!("{}", array_3);
+    println!("{:?}", array_1);
 }

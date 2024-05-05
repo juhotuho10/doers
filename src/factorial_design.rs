@@ -397,7 +397,6 @@ let example_array = gsd(&levels, reductions, n_arrays);
 */
 #[allow(dead_code)]
 pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>>, String> {
-    assert!(reduction > 1, "The level of reductions must 2 or higher");
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
     } else if n < 1 {

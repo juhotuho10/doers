@@ -1,4 +1,4 @@
-use ndarray::{concatenate, s, Array, Array2, Axis};
+use ndarray::{array, concatenate, s, Array2, Axis};
 use std::{cmp::max, vec};
 
 /*
@@ -45,7 +45,7 @@ Creates a Box-Behnken design.
   The number of factors in the design.
 
 - `center`: `usize`
-  The number of center points to include. Defaults to 1 if not specified.
+  The number of center points to include.
 
 # Returns
 
@@ -178,8 +178,8 @@ Generates a Central Composite Design (CCD).
 - `n`: `usize`
   The number of factors in the design.
 
-- `center`: `Vec<u32>`
-  A vector of two integers representing the number of center points in each block of the design. Defaults to `[4, 4]`.
+- `center`: `&[u32]`
+  A vector of two integers representing the number of center points in each block of the design.
 
 - `alpha`: `Alpha`
   Specifies the effect of alpha on the variance. Possible values are:
@@ -233,6 +233,8 @@ Generate a CCD for 3 factors:
 */
 #[allow(dead_code)]
 pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
+    use super::factorial_design::ff2n;
+
     if n < 2 {
         return Err("n must be 2 or higher".to_string());
     }
@@ -245,33 +247,33 @@ pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Ar
         (Alpha::Orthogonal, Face::Inscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (_, a) = star(n, Alpha::Orthogonal, center).unwrap();
-            h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
+            (_, a) = star(n, alpha, center).unwrap();
+            h1 = ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
             (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
         }
         (Alpha::Rotatable, Face::Inscribed) => {
             // Rotatable Design
             // Inscribed CCD
-            (_, a) = star(n, Alpha::Rotatable, &[1, 1]).unwrap();
-            h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
+            (_, a) = star(n, alpha, &[1, 1]).unwrap();
+            h1 = ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
             (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
         }
         (Alpha::Orthogonal, Face::Circumscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (h2, _) = star(n, Alpha::Orthogonal, center).unwrap();
-            h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
+            (h2, _) = star(n, alpha, center).unwrap();
+            h1 = ff2n(n)?.mapv(|x| x as f32);
         }
         (Alpha::Rotatable, Face::Circumscribed) => {
             // Rotatable Design
             // Circumscribed CCD
-            (h2, _) = star(n, Alpha::Rotatable, &[1, 1]).unwrap();
-            h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
+            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
+            h1 = ff2n(n)?.mapv(|x| x as f32);
         }
         (Alpha::Faced, _) => {
-            // Faced CCD
-            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
-            h1 = super::factorial_design::ff2n(n)?.mapv(|x| x as f32);
+            // Faced Design
+            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
+            h1 = ff2n(n)?.mapv(|x| x as f32);
         }
     };
 
@@ -296,8 +298,8 @@ Generates the star points for various design matrices.
   - `Alpha::Orthogonal`: Star points are placed to preserve orthogonality.
   - `Alpha::Rotatable`: Star points are placed to achieve rotatability of the design.
 
-- `center`: `Vec<u32>`
-  A vector containing two integers that indicate the number of center points assigned in each block of the response surface design. Defaults to `[1, 1]`.
+- `center`: `&[u32]`
+  A vector containing two integers that indicate the number of center points assigned in each block of the response surface design.
 
 # Returns
 
@@ -354,10 +356,7 @@ pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> Result<(Array2<f32>, f32)
 
     // Create the actual matrix now.
     let mut h_array: Array2<f32> = Array2::<f32>::zeros((2 * n, n));
-    let arr: ndarray::prelude::ArrayBase<
-        ndarray::OwnedRepr<f32>,
-        ndarray::prelude::Dim<[usize; 1]>,
-    > = Array::from_vec(vec![-1.0, 1.0]);
+    let arr = array![-1.0, 1.0];
     for i in 0..n {
         let index = 2 * i;
         let mut slice = h_array.slice_mut(s![index..index + 2, i]);
