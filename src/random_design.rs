@@ -358,11 +358,11 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     let mut index_rm: Array1<usize> = Array::zeros(size - samples);
 
     for i in 0..samples * 4 {
-        let mut order = d_ij.clone();
-        order = sort_array2_by_axis_with_nan_handling(order);
+        let mut order: Array2<f32> = d_ij.clone();
+        sort_array2(&mut order);
         let avg_dist: Vec<f32> = order
             .axis_iter(Axis(0))
-            .map(|row| mean_of_first_two(row.as_slice().unwrap()))
+            .map(|row| mean_of_first_two(row.to_owned()))
             .collect();
 
         let min_l = argmin_ignore_nan(&avg_dist).expect("We should have min index");
@@ -583,7 +583,7 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 
 # Parameters
 
-- `values`: &[f32]
+- `values`: Array1<&f32>
     A slice of floating-point numbers, potentially containing NaN values, from which the mean of the first two valid values will be calculated.
 
 # Returns
@@ -597,10 +597,14 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 
 This function is useful in data processing and analysis tasks where it is necessary to compute statistics on datasets that may include missing or undefined values.
 */
-fn mean_of_first_two(values: &[f32]) -> f32 {
-    let valid_values: Vec<f32> = values.iter().filter(|v| !v.is_nan()).cloned().collect();
-    let total: f32 = valid_values.iter().take(2).sum();
-    total / valid_values.len() as f32
+fn mean_of_first_two(values: Array1<f32>) -> f32 {
+    let valid_values = values.iter().filter(|&&v| !v.is_nan()).take(2);
+
+    let (sum, count) = valid_values.fold((0.0, 00.0), |(acc_sum, acc_count), &val| {
+        (acc_sum + val, acc_count + 1.)
+    });
+
+    sum / count
 }
 
 /**
@@ -665,28 +669,15 @@ This ensures that NaN values are moved to the end of each row after sorting. The
 
 The function's approach to handling NaN values makes it particularly useful in data processing and analysis tasks where NaN represents missing or undefined data that should not interfere with sorting operations.
 */
-fn sort_array2_by_axis_with_nan_handling(mut array: Array2<f32>) -> Array2<f32> {
+fn sort_array2(array: &mut Array2<f32>) {
     for mut row in array.axis_iter_mut(Axis(0)) {
-        let mut row_vec: Vec<f32> = row.to_vec();
-
-        // Custom sort to handle NaN values. We use partial_cmp for comparison
-        // and specify that NaN values should be considered as greater
-        row_vec.sort_by(|a, b| match (a.is_nan(), b.is_nan()) {
-            (true, true) => std::cmp::Ordering::Equal,
-            (true, false) => std::cmp::Ordering::Greater,
-            (false, true) => std::cmp::Ordering::Less,
-            (false, false) => a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal),
-        });
-
-        // Update the original row with sorted values
-        row.assign(
-            &Array2::from_shape_vec((1, row_vec.len()), row_vec)
-                .unwrap()
-                .row(0),
-        );
+        if let Some(row_slice) = row.as_slice_mut() {
+            // Custom sort using total_cmp for consistent ordering, including NaN handling
+            row_slice.sort_by(|a, b| a.total_cmp(b));
+        } else {
+            panic!("Failed to obtain mutable slice from row");
+        }
     }
-
-    array
 }
 
 /**
