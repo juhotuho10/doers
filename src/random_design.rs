@@ -659,13 +659,8 @@ This ensures that NaN values are moved to the end of each row after sorting. The
 
 # Parameters
 
-- `array`: Array2<f32>
+- `array`: &mut Array2<f32>
     A mutable reference to a two-dimensional array of floating-point numbers. The array is modified in place, with each row sorted according to the rules specified.
-
-# Returns
-
-- `Array2<f32>`
-    The same array passed in, with each row sorted such that numerical values are in ascending order and NaN values are placed at the end of each row. This allows for easier handling of NaN values in subsequent data processing steps.
 
 The function's approach to handling NaN values makes it particularly useful in data processing and analysis tasks where NaN represents missing or undefined data that should not interfere with sorting operations.
 */
