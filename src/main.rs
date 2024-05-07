@@ -1,12 +1,15 @@
+use ndarray::Array2;
+
 mod factorial_design;
 mod random_design;
 mod response_surface_design;
 
-use crate::response_surface_design::{Alpha, Face};
-
 fn main() {
-    let array_1 =
-        response_surface_design::ccdesign(3, &[3, 3, 3], Alpha::Orthogonal, Face::Circumscribed);
+    let mut array_1 = vec![Array2::from_elem((1, 1), 1)];
+
+    for _ in 0..1000 {
+        array_1 = factorial_design::gsd(&[5, 5, 5, 5, 5], 5, 3).expect("")
+    }
 
     println!("{:?}", array_1);
 }

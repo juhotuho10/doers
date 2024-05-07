@@ -583,7 +583,7 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 
 # Parameters
 
-- `values`: Array1<&f32>
+- `values`: Array1<f32>
     A slice of floating-point numbers, potentially containing NaN values, from which the mean of the first two valid values will be calculated.
 
 # Returns

@@ -405,11 +405,11 @@ pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>
 
     let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, &reduction);
     let latin_square: Array2<u16> = make_latin_square(reduction);
-    let ortogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len());
+    let orthogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len());
 
     let mut design_vec: Vec<Array2<u16>> = vec![];
 
-    for oa in ortogonal_arrays.axis_iter(Axis(0)) {
+    for oa in orthogonal_arrays.axis_iter(Axis(0)) {
         // call the function with orthagonal arrays and forward the error if the function fails
         let design: Array2<u16> = map_partitions_to_design(&partitions, &oa.to_owned())?;
         design_vec.push(design);
@@ -499,17 +499,21 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u
 
 fn map_partitions_to_design(
     partitions: &[Vec<Vec<u16>>],
-    ortogonal_array: &Array2<u16>,
+    orthogonal_array: &Array2<u16>,
 ) -> Result<Array2<u16>, String> {
-    if !(partitions.len() == *ortogonal_array.iter().max().unwrap() as usize + 1
-        && *ortogonal_array.iter().min().unwrap() == 0)
-    {
+    let (min_value, max_value) = orthogonal_array
+        .iter()
+        .fold((u16::MAX, u16::MIN), |(min, max), &val| {
+            (min.min(val), max.max(val))
+        });
+
+    if min_value != 0 || (max_value as usize + 1) != partitions.len() {
         return Err("Orthogonal array indexing does not match partition structure".to_string());
     }
 
     let mut mappings: Vec<Vec<u16>> = Vec::new();
 
-    for row in ortogonal_array.axis_iter(Axis(0)) {
+    for row in orthogonal_array.axis_iter(Axis(0)) {
         // partitions is Array3, we take the Array1 from position partition[[p, factor]]
         let partition_sets: Vec<Vec<u16>> = row
             .iter()
@@ -534,7 +538,7 @@ fn map_partitions_to_design(
         return Err("Reduction is too large for the design size".to_string());
     }
 
-    // Convert mappings to Array2<u16>. You might need to adjust this part based on your specific requirements
+    // Convert mappings to Array2<u16>
     let ncols = mappings[0].len();
     let flat: Vec<u16> = mappings.into_iter().flatten().collect();
     let nrows = flat.len() / ncols;
