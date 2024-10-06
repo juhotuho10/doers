@@ -81,7 +81,6 @@ let example_array = fullfact(&[2, 4, 3]);
 //  [ 1,  3,  2]];
 ```
  */
-
 pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
     let n = levels.len();
     let num_lines: u64 = levels.iter().map(|&level| level as u64).product();
@@ -204,7 +203,6 @@ let example_array = pbdesign(5);
 //        [ 1,  1,  1,  1,  1]])
 ```
 */
-
 #[allow(dead_code)]
 pub fn pbdesign(n: u32) -> Array2<i32> {
     let keep = n as usize;
@@ -218,7 +216,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
     let (significand, exponents) = frexp(&num_array);
 
     for (index, (&mantissa, &exponent)) in significand.iter().zip(exponents.iter()).enumerate() {
-        if mantissa == 0.5 && exponent > 0 {
+        if (mantissa - 0.5) < 0.01 && exponent > 0 {
             k = index;
             break;
         }
@@ -379,7 +377,7 @@ let example_array = gsd(&levels, reductions, n_arrays);
 //  [1, 2]]]
  ```
 
- If the design fails a ValueError is raised:
+ If the design fails a `ValueError` is raised:
 
 ```rust
 use doers::factorial_design::gsd;
@@ -403,7 +401,7 @@ pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>
         return Err("n number of designs must be 1 or higher".to_string());
     }
 
-    let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, &reduction);
+    let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, reduction);
     let latin_square: Array2<u16> = make_latin_square(reduction);
     let orthogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len());
 
@@ -418,7 +416,7 @@ pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>
     Ok(design_vec.iter().take(n).cloned().collect())
 }
 
-fn make_partitions(factor_levels: &[u16], &num_partitions: &usize) -> Vec<Vec<Vec<u16>>> {
+fn make_partitions(factor_levels: &[u16], num_partitions: usize) -> Vec<Vec<Vec<u16>>> {
     // Calculate total partitions and maximum size to initialize the array.
     //let max_size = *factor_levels.iter().max().unwrap_or(&1) as usize;
     let mut partitions_vec: Vec<Vec<Vec<u16>>> = vec![];
@@ -614,7 +612,7 @@ pub fn fracfact(design: &str) -> Array2<i32> {
     let multi_letter_i = char_splits
         .iter()
         .enumerate()
-        .filter_map(|(i, &x)| if x.len() != 1 { Some(i) } else { None })
+        .filter_map(|(i, &x)| if x.len() == 1 { None } else { Some(i) })
         .collect_vec();
 
     // new splits with the "+" and "-" included with the letters
@@ -622,11 +620,10 @@ pub fn fracfact(design: &str) -> Array2<i32> {
     let splits: Vec<&str> = separator_regex.split(design).collect();
 
     // indexes that are marked negative
-    let minus_reg = Regex::new(r"\-").expect("regex error");
     let minus_i = splits
         .iter()
         .enumerate()
-        .filter_map(|(i, &x)| if minus_reg.is_match(x) { Some(i) } else { None })
+        .filter_map(|(i, &x)| if x.contains('-') { Some(i) } else { None })
         .collect_vec();
 
     // ff2n design of the main factors
@@ -688,7 +685,6 @@ Each float `x` is transformed into `m * 2^e`, where `m` is the mantissa and `e` 
 # Returns
 A tuple of arrays (`Array1<f32>`, `Array1<i32>`) for mantissas and exponents respectively.
 */
-
 fn frexp(arr: &Array1<f32>) -> (Array1<f32>, Array1<i32>) {
     let mantissas = arr.mapv(|x| {
         if x == 0.0 {

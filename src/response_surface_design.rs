@@ -79,8 +79,10 @@ Generate a Box-Behnken design for 3 factors with 3 center points:
 ```
 */
 #[allow(dead_code)]
-pub fn bbdesign_center(n: usize, center: usize) -> Array2<i32> {
-    assert!(n >= 3, "Number of variables must be at least 3");
+pub fn bbdesign_center(n: usize, center: usize) -> Result<Array2<i32>, String> {
+    if n < 3 {
+        return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
+    }
 
     let mut h_array = bb_algorithm(n);
 
@@ -88,7 +90,7 @@ pub fn bbdesign_center(n: usize, center: usize) -> Array2<i32> {
 
     h_array = concatenate![Axis(0), h_array, center_matrix];
 
-    h_array
+    Ok(h_array)
 }
 
 /**
@@ -249,33 +251,33 @@ pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Ar
         (Alpha::Orthogonal, Face::Inscribed) => {
             // Orthogonal Design
             // Inscribed CCD
-            (_, a) = star(n, alpha, center).unwrap();
+            (_, a) = star(n, alpha, center);
             h1 = ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Faced, &[1, 1]);
         }
         (Alpha::Rotatable, Face::Inscribed) => {
             // Rotatable Design
             // Inscribed CCD
-            (_, a) = star(n, alpha, &[1, 1]).unwrap();
+            (_, a) = star(n, alpha, &[1, 1]);
             h1 = ff2n(n)?.mapv(|x| x as f32) / a; // Scale down the factorial points with a
-            (h2, _) = star(n, Alpha::Faced, &[1, 1]).unwrap();
+            (h2, _) = star(n, Alpha::Faced, &[1, 1]);
         }
         (Alpha::Orthogonal, Face::Circumscribed) => {
             // Orthogonal Design
             // Inscribed CCD
             h1 = ff2n(n)?.mapv(|x| x as f32);
-            (h2, _) = star(n, alpha, center).unwrap();
+            (h2, _) = star(n, alpha, center);
         }
         (Alpha::Rotatable, Face::Circumscribed) => {
             // Rotatable Design
             // Circumscribed CCD
             h1 = ff2n(n)?.mapv(|x| x as f32);
-            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
+            (h2, _) = star(n, alpha, &[1, 1]);
         }
         (Alpha::Faced, _) => {
             // Faced Design
             h1 = ff2n(n)?.mapv(|x| x as f32);
-            (h2, _) = star(n, alpha, &[1, 1]).unwrap();
+            (h2, _) = star(n, alpha, &[1, 1]);
         }
     };
 
@@ -332,7 +334,7 @@ Generate star points for a 3-variable design:
 //        [ 0.0,  0.0,  1.0]])
 ```
 */
-pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> Result<(Array2<f32>, f32), String> {
+pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
     // Star points at the center of each face of the factorial
 
     let a: f32 = match alpha {
@@ -363,7 +365,7 @@ pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> Result<(Array2<f32>, f32)
     }
     h_array *= a;
 
-    Ok((h_array, a))
+    (h_array, a)
 }
 
 // ##############################################################################################################
@@ -490,7 +492,7 @@ mod tests {
             [0, 0, 0],
         ];
 
-        let return_array = bbdesign_center(n, center);
+        let return_array = bbdesign_center(n, center).unwrap(); // can't fail
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
@@ -530,7 +532,7 @@ mod tests {
             [0, 0, 0, 0],
         ];
 
-        let return_array = bbdesign_center(n, center);
+        let return_array = bbdesign_center(n, center).unwrap(); // can't fail
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 

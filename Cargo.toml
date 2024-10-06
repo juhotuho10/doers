@@ -1,12 +1,12 @@
 [package]
+edition = "2021"
 name = "doers"
 version = "0.1.0"
-edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0.12.1"
-ndarray = "0.15.6"
-ndarray-rand = "0.14.0"
-regex = "1.9.6"
+itertools = "0.13.0"
+ndarray = "0.16.1"
+ndarray-rand = "0.15.0"
+regex = "1.10.6"

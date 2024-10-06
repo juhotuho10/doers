@@ -286,13 +286,13 @@ pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u1
         let corr: Array2<f32> = corrcoef(&h_array.t().to_owned());
         let max_corr = corr
             .iter()
-            .filter(|&&x| x != 1.0)
+            .filter(|&&x| x < 1.0)
             .map(|x| x.abs())
             .fold(f32::MIN, f32::max);
 
         if max_corr < mincorr {
             mincorr = max_abs_off_diagonal(&corr);
-            h_array = h_candidate
+            h_array = h_candidate;
         }
     }
 
@@ -362,7 +362,7 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
         sort_array2(&mut order);
         let avg_dist: Vec<f32> = order
             .axis_iter(Axis(0))
-            .map(|row| mean_of_first_two(row.to_owned()))
+            .map(|row| mean_of_first_two(&row.to_owned()))
             .collect();
 
         let min_l = argmin_ignore_nan(&avg_dist).expect("We should have min index");
@@ -375,7 +375,7 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
         index_rm[i] = min_l;
     }
 
-    rdpoints = delete_rows(rdpoints, index_rm);
+    rdpoints = delete_rows(&rdpoints, &index_rm);
     let rank: Array2<usize> = argsort_axis0(&rdpoints);
     let mut h_array: Array2<f32> = Array2::zeros((samples, n));
 
@@ -508,7 +508,7 @@ This function computes the correlation coefficients for every pair of variables 
 
 # Parameters
 
-- `x`: &ArrayBase<S, Ix2>
+- `x`: &`ArrayBase`<S, Ix2>
     A two-dimensional array where each column represents a variable and each row represents an observation. The input array `x` must have floating-point numbers (`f32`).
 
 # Returns
@@ -532,7 +532,7 @@ fn corrcoef(x: &Array2<f32>) -> Array2<f32> {
     }
 
     // Convert covariance matrix to correlation coefficient matrix
-    let variances = cov_matrix.diag().mapv(|v| v.sqrt());
+    let variances = cov_matrix.diag().mapv(f32::sqrt);
     for i in 0..cov_matrix.nrows() {
         for j in 0..cov_matrix.ncols() {
             if i != j {
@@ -597,7 +597,7 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 
 This function is useful in data processing and analysis tasks where it is necessary to compute statistics on datasets that may include missing or undefined values.
 */
-fn mean_of_first_two(values: Array1<f32>) -> f32 {
+fn mean_of_first_two(values: &Array1<f32>) -> f32 {
     let valid_values = values.iter().filter(|&&v| !v.is_nan()).take(2);
 
     let (sum, count) = valid_values.fold((0.0, 00.0), |(acc_sum, acc_count), &val| {
@@ -627,7 +627,7 @@ This is particularly useful in data manipulation tasks where certain observation
 - `Array2<f32>`
     A new two-dimensional array that is a copy of `arr` with the specified rows removed. If all specified indices are out of bounds, the returned array will be identical to `arr`.
 */
-fn delete_rows(arr: Array2<f32>, indices: Array1<usize>) -> Array2<f32> {
+fn delete_rows(arr: &Array2<f32>, indices: &Array1<usize>) -> Array2<f32> {
     let mut to_delete = vec![false; arr.nrows()];
     for &index in indices.iter() {
         if index < to_delete.len() {
@@ -642,13 +642,11 @@ fn delete_rows(arr: Array2<f32>, indices: Array1<usize>) -> Array2<f32> {
         }
     }
 
-    match stack(
+    stack(
         Axis(0),
         &new_vec.iter().map(|a| a.view()).collect::<Vec<_>>(),
-    ) {
-        Ok(res) => res,
-        Err(_) => panic!("Error stacking rows back into an array."),
-    }
+    )
+    .unwrap_or_else(|_| panic!("Error stacking rows back into an array."))
 }
 
 /**
@@ -668,7 +666,7 @@ fn sort_array2(array: &mut Array2<f32>) {
     for mut row in array.axis_iter_mut(Axis(0)) {
         if let Some(row_slice) = row.as_slice_mut() {
             // Custom sort using total_cmp for consistent ordering, including NaN handling
-            row_slice.sort_by(|a, b| a.total_cmp(b));
+            row_slice.sort_by(f32::total_cmp);
         } else {
             panic!("Failed to obtain mutable slice from row");
         }
@@ -900,7 +898,7 @@ mod tests {
             cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
             let a = cut.slice(s![..samples]);
-            let b = cut.slice(s![1..samples + 1]);
+            let b = cut.slice(s![1..=samples]);
             let center = ((&a + &b) / 2.).mapv(|x| x as f32);
             let sorted_center = sort_ndarray_array1(center);
 
@@ -921,7 +919,7 @@ mod tests {
             cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
             let a = cut.slice(s![..samples]);
-            let b = cut.slice(s![1..samples + 1]);
+            let b = cut.slice(s![1..=samples]);
             let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
             center = sort_ndarray_array1(center);
 
