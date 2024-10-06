@@ -216,7 +216,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
     let (significand, exponents) = frexp(&num_array);
 
     for (index, (&mantissa, &exponent)) in significand.iter().zip(exponents.iter()).enumerate() {
-        if (mantissa - 0.5) < 0.01 && exponent > 0 {
+        if (mantissa - 0.5).abs() < 0.01 && exponent > 0 {
             k = index;
             break;
         }
