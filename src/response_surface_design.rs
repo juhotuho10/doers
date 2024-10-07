@@ -138,7 +138,7 @@ Generate a Box-Behnken design for 3 factors:
 #[allow(dead_code)]
 pub fn bbdesign(n: usize) -> Result<Array2<i32>, String> {
     if n < 3 {
-        return Err("n size must be 3 or higher".to_string());
+        return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
     }
 
     let mut h_array = bb_algorithm(n);
@@ -240,7 +240,7 @@ pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Ar
     use super::factorial_design::ff2n;
 
     if n < 2 {
-        return Err("n must be 2 or higher".to_string());
+        return Err("The number of factors in the design (n) must be 2 or higher".to_owned());
     }
 
     let h1: Array2<f32>;
@@ -307,17 +307,13 @@ Generates the star points for various design matrices.
 
 # Returns
 
-- `Result<(Array2<f32>, f32), String>`
+- `(Array2<f32>, f32)`
 
 - `Array2<f32>` : `H`
   The star-point portion of the design matrix, positioned at `+/- alpha`.
 
 - `f32` : `a`
   The alpha value used to scale the star points.
-
-
-# Error
-- Returns a error string if `alpha` string isn't correct
 
 # Example
 

@@ -87,7 +87,7 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
 
     if num_lines > usize::MAX as u64 {
         return Err("Number of lines exceeds maximum allowable size.".to_string());
-    } else if levels.iter().any(|x| *x == 0) {
+    } else if levels.iter().any(|&x| x == 0) {
         return Err("All level sizes must be 1 or higher".to_string());
     }
 
@@ -108,7 +108,7 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
 }
 
 fn build_level(mut output: ArrayViewMut1<u16>, level: u16, repeat: usize, range_repeat: usize) {
-    let mut count = 0;
+    let mut count: usize = 0;
     for _ in 0..range_repeat {
         for j in 0..level {
             for _ in 0..repeat {
@@ -129,7 +129,7 @@ Creates a 2-Level full-factorial design.
 
 # Returns
 
-- `Array2<i32>`
+- `Result<Array2<i32>, String>`
   The design matrix with coded levels -1 and 1, representing the two levels for each factor across all possible combinations.
 
 # Errors
@@ -293,14 +293,17 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
 
  # Returns
 
- - `Vec<Array2<u16>>` `n` amount of complementary Array2<u16> matrices that have complementary designs,
+ - `Result<Vec<Array2<u16>>, String>` `n` amount of complementary Array2<u16> matrices that have complementary designs,
     where the design size will be reduced down by reduction size
 
  # Error
 
  - Returns a error string:
    If input is invalid or if design construction fails. The design can fail
+   If any of the `levels` numbers are under 2, there will be an error.
+   If `levels` has less than 2 numbers.
    if `reduction` is too large compared to values of `levels`.
+   If `n_designs` numbers in under 1, the return would be empty, so we return error instead.
 
  # Notes
 
@@ -394,11 +397,15 @@ let example_array = gsd(&levels, reductions, n_arrays);
  - Vikstrom, Ludvig, et al. Computer-implemented systems and methods for generating generalized fractional designs. US9746850 B2, filed May 9, 2014, and issued August 29, 2017. <http://www.google.se/patents/US9746850>
 */
 #[allow(dead_code)]
-pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>>, String> {
+pub fn gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Array2<u16>>, String> {
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
-    } else if n < 1 {
-        return Err("n number of designs must be 1 or higher".to_string());
+    } else if n_designs < 1 {
+        return Err("The number of designs must be 1 or higher".to_string());
+    } else if levels.iter().any(|&x| x < 2) {
+        return Err("All level nums must be 2 or higher".to_string());
+    } else if levels.len() < 2 {
+        return Err("Levels must have 2 or more numbers".to_string());
     }
 
     let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, reduction);
@@ -412,8 +419,8 @@ pub fn gsd(levels: &[u16], reduction: usize, n: usize) -> Result<Vec<Array2<u16>
         let design: Array2<u16> = map_partitions_to_design(&partitions, &oa.to_owned())?;
         design_vec.push(design);
     }
-
-    Ok(design_vec.iter().take(n).cloned().collect())
+    // works even when n > array size
+    Ok(design_vec.iter().take(n_designs).cloned().collect())
 }
 
 fn make_partitions(factor_levels: &[u16], num_partitions: usize) -> Vec<Vec<Vec<u16>>> {
@@ -445,6 +452,7 @@ fn make_latin_square(n: usize) -> Array2<u16> {
     });
     return_array
 }
+
 fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u16> {
     let first_row = latin_square.slice(s![0, ..]);
 
