@@ -682,13 +682,13 @@ pub fn fracfact(design: &str) -> Array2<i32> {
 // ##############################################################################################################
 
 /**
-frexp for a Array1 of f32
+frexp for a Array1 of f64
 Decomposes elements of a float array into mantissas and exponents.
 
 Each float `x` is transformed into `m * 2^e`, where `m` is the mantissa and `e` the exponent.
 
 # Arguments
-`Array1<f32>`
+`Array1<f64>`
 
 # Returns
 A tuple of arrays (`Array1<f64>`, `Array1<i32>`) for mantissas and exponents respectively.
