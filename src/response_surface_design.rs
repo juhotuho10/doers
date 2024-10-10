@@ -235,7 +235,7 @@ Generate a CCD for 3 factors:
 //            [ 0.        ,  0.        ,  0.        ]])
 ```
 */
-#[allow(dead_code)]
+#[allow(dead_code, clippy::cast_precision_loss)] // ff2n values will never lose precision with f32
 pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
     use super::factorial_design::ff2n;
 
@@ -333,25 +333,25 @@ Generate star points for a 3-variable design:
 pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
     // Star points at the center of each face of the factorial
 
-    let a: f32 = match alpha {
+    let a: f64 = match alpha {
         Alpha::Faced => 1.0,
         Alpha::Orthogonal => {
-            let nc = u32::pow(2, n as u32) as f32; // factorial points
-            let nco = center[0] as f32; // center points to factorial
-            let na = 2. * n as f32; // axial points
-            let nao = center[1] as f32; // center points to axial design
+            let nc = u32::pow(2, n as u32) as f64; // factorial points
+            let nco = center[0] as f64; // center points to factorial
+            let na = 2. * n as f64; // axial points
+            let nao = center[1] as f64; // center points to axial design
                                         // value of alpha in orthogonal design
-            let n = n as f32;
+            let n = n as f64;
             (n * (1. + nao / na) / (1. + nco / nc)).sqrt()
         }
         Alpha::Rotatable => {
-            let nc = i32::pow(2, n as u32) as f32; // number of factorial points
+            let nc = i32::pow(2, n as u32) as f64; // number of factorial points
             nc.powf(0.25) // value of alpha in rotatable design
         }
     };
 
     // Create the actual matrix now.
-    let mut h_array: Array2<f32> = Array2::<f32>::zeros((2 * n, n));
+    let mut h_array: Array2<f64> = Array2::<f64>::zeros((2 * n, n));
     let arr = array![-1.0, 1.0];
     for i in 0..n {
         let index = 2 * i;
@@ -360,6 +360,8 @@ pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
         slice.assign(&arr);
     }
     h_array *= a;
+    let h_array = h_array.mapv(|x| x as f32);
+    let a = a as f32;
 
     (h_array, a)
 }

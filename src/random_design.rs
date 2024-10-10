@@ -377,13 +377,13 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
 
     rdpoints = delete_rows(&rdpoints, &index_rm);
     let rank: Array2<usize> = argsort_axis0(&rdpoints);
-    let mut h_array: Array2<f32> = Array2::zeros((samples, n));
+    let mut h_array: Array2<f64> = Array2::zeros((samples, n));
 
-    let mut distr: Uniform<f32>;
+    let mut distr: Uniform<f64>;
 
     for l in 0..samples {
-        let low: f32 = l as f32 / samples as f32;
-        let high: f32 = (l + 1) as f32 / samples as f32;
+        let low: f64 = l as f64 / samples as f64;
+        let high: f64 = (l + 1) as f64 / samples as f64;
         distr = Uniform::new(low, high);
 
         Zip::from(&rank)
@@ -394,7 +394,7 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
                 }
             });
     }
-    h_array
+    h_array.mapv(|x| x as f32)
 }
 
 // ##############################################################################################################

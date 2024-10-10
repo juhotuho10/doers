@@ -206,7 +206,7 @@ let example_array = pbdesign(5);
 #[allow(dead_code)]
 pub fn pbdesign(n: u32) -> Array2<i32> {
     let keep = n as usize;
-    let n = n as f32;
+    let n = n as f64;
 
     let n = 4. * ((n / 4.).floor() + 1.); // calculate the correct number of rows
 
@@ -691,16 +691,16 @@ Each float `x` is transformed into `m * 2^e`, where `m` is the mantissa and `e` 
 `Array1<f32>`
 
 # Returns
-A tuple of arrays (`Array1<f32>`, `Array1<i32>`) for mantissas and exponents respectively.
+A tuple of arrays (`Array1<f64>`, `Array1<i32>`) for mantissas and exponents respectively.
 */
-fn frexp(arr: &Array1<f32>) -> (Array1<f32>, Array1<i32>) {
+fn frexp(arr: &Array1<f64>) -> (Array1<f64>, Array1<i32>) {
     let mantissas = arr.mapv(|x| {
         if x == 0.0 {
             0.0 // Mantissa for zero
         } else {
             let mut y = x.abs();
             let exponent = y.log2().floor() + 1.0;
-            y /= f32::powf(2.0, exponent);
+            y /= f64::powf(2.0, exponent);
             if x < 0.0 {
                 -y
             } else {
@@ -796,10 +796,10 @@ mod tests {
     use super::*;
     use ndarray::{ArrayBase, Data, Dimension, Zip};
 
-    fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
+    fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f64) -> bool
     // checks if all the Array1 elements are within tolerance
     where
-        S: Data<Elem = f32>,
+        S: Data<Elem = f64>,
         D: Dimension,
     {
         assert_eq!(a.shape(), b.shape(), "array shapes must be the same");
@@ -1125,12 +1125,12 @@ mod tests {
 
         #[test]
         fn frexp_test() {
-            let levels: Array1<f32> = array![5., 5. / 12., 5. / 20.];
+            let levels: Array1<f64> = array![5., 5. / 12., 5. / 20.];
             let (f, e) = frexp(&levels);
 
-            let e = e.mapv(|x| x as f32);
+            let e = e.mapv(|x| x as f64);
 
-            let expected_f = array![0.625, 0.8333333, 0.5];
+            let expected_f = array![0.625, 0.83333, 0.5];
             let expected_e = array![3., -1., -1.];
             assert!(
                 arrays_are_close(&f, &expected_f, 0.01),
