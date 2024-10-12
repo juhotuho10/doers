@@ -755,10 +755,10 @@ mod tests {
     use ndarray::{Array3, ArrayBase, Data, Dimension};
 
     // ######################################### helper functions ######################################
-    fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
+    fn sort_ndarray_array1(array: &mut Array1<f32>) {
         let mut vec = array.to_vec();
         vec.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-        Array1::from(vec)
+        *array = Array1::from(vec);
     }
 
     fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
@@ -896,12 +896,12 @@ mod tests {
 
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..=samples]);
-            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            let sorted_center = sort_ndarray_array1(center);
+            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            sort_ndarray_array1(&mut center);
 
             for col in arr.axis_iter(Axis(1)) {
-                let sorted_col = sort_ndarray_array1(col.to_owned());
-                assert_eq!(sorted_center, sorted_col);
+                sort_ndarray_array1(&mut col.to_owned());
+                assert_eq!(center, col);
             }
         }
 
@@ -918,14 +918,14 @@ mod tests {
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..=samples]);
             let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            center = sort_ndarray_array1(center);
+            sort_ndarray_array1(&mut center);
 
             for col in arr.axis_iter(Axis(1)) {
-                let sorted_col = sort_ndarray_array1(col.to_owned());
+                sort_ndarray_array1(&mut col.to_owned());
 
                 assert!(arrays_are_close(
                     &center,
-                    &sorted_col,
+                    &col.to_owned(),
                     0.5 / (samples as f32)
                 ));
             }
