@@ -1,8 +1,8 @@
 use itertools::Itertools;
-use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayViewMut1, Axis};
+use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayBase, ArrayViewMut1, Axis};
 use regex::Regex;
 use std::collections::HashMap;
-use std::vec;
+
 /*
 This code was originally published by the following individuals for use with Scilab:
     Copyright (C) 2012 - 2013 - Michael Baudin
@@ -478,8 +478,11 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u
                 let combined = concatenate![Axis(1), repeat_array, *other_a];
                 sub_a.push(combined);
             }
-            let new_a_matrix =
-                concatenate(Axis(0), &sub_a.iter().map(|a| a.view()).collect::<Vec<_>>()).unwrap();
+            let new_a_matrix = concatenate(
+                Axis(0),
+                &sub_a.iter().map(ArrayBase::view).collect::<Vec<_>>(),
+            )
+            .unwrap();
             new_a_matrices.push(new_a_matrix);
         }
 

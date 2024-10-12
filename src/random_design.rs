@@ -2,10 +2,10 @@ use ndarray_rand::rand::{rngs::SmallRng, seq::SliceRandom, SeedableRng};
 use ndarray_rand::rand_distr::{Distribution, Uniform};
 use ndarray_rand::RandomExt;
 
-use ndarray::stack;
 use ndarray::{s, Array, Array1, Array2, Axis, Zip};
+use ndarray::{stack, ArrayBase};
 use ndarray_rand::rand::{thread_rng, Rng};
-use std::vec;
+
 /*
 This code was originally published by the following individuals for use with Scilab:
     Copyright (C) 2012 - 2013 - Michael Baudin
@@ -79,7 +79,7 @@ pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     let cut = Array::linspace(0., 1., samples + 1);
 
     let a = cut.slice(s![..samples]);
-    let b = cut.slice(s![1..samples + 1]);
+    let b = cut.slice(s![1..=samples]);
     let mut h_array: Array2<f32> = Array::zeros(array_shape);
 
     for i in 0..n {
@@ -153,7 +153,7 @@ pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> 
     cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
     let a = cut.slice(s![..samples]);
-    let b = cut.slice(s![1..samples + 1]);
+    let b = cut.slice(s![1..=samples]);
     let mut center = ((&a + &b) / 2.).to_vec();
     let mut h_array = Array::zeros(array_shape);
 
@@ -570,7 +570,7 @@ This function is commonly used in numerical analysis and matrix computations, es
 fn max_abs_off_diagonal(r: &Array2<f32>) -> f32 {
     let identity: Array2<f32> = Array2::eye(r.nrows());
     let abs_diff = (r - identity).mapv_into(f32::abs);
-    let max_abs_off_diag = abs_diff.iter().fold(0.0_f32, |acc, &x| acc.max(x));
+    let max_abs_off_diag = abs_diff.iter().fold(0.0f32, |acc, &x| acc.max(x));
 
     max_abs_off_diag
 }
@@ -629,7 +629,7 @@ This is particularly useful in data manipulation tasks where certain observation
 */
 fn delete_rows(arr: &Array2<f32>, indices: &Array1<usize>) -> Array2<f32> {
     let mut to_delete = vec![false; arr.nrows()];
-    for &index in indices.iter() {
+    for &index in indices {
         if index < to_delete.len() {
             to_delete[index] = true;
         }
@@ -644,7 +644,7 @@ fn delete_rows(arr: &Array2<f32>, indices: &Array1<usize>) -> Array2<f32> {
 
     stack(
         Axis(0),
-        &new_vec.iter().map(|a| a.view()).collect::<Vec<_>>(),
+        &new_vec.iter().map(ArrayBase::view).collect::<Vec<_>>(),
     )
     .unwrap_or_else(|_| panic!("Error stacking rows back into an array."))
 }
@@ -777,7 +777,7 @@ mod tests {
     }
 
     fn vec_array2_to_array3(arrays: Vec<Array2<f32>>) -> Array3<f32> {
-        let views: Vec<_> = arrays.iter().map(|a| a.view()).collect();
+        let views: Vec<_> = arrays.iter().map(ArrayBase::view).collect();
         stack(Axis(0), &views).expect("Error stacking arrays")
     }
 

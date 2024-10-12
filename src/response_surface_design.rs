@@ -1,5 +1,5 @@
 use ndarray::{array, concatenate, s, Array2, Axis};
-use std::{cmp::max, vec};
+use std::cmp::max;
 
 /*
 This code was originally published by the following individuals for use with Scilab:
