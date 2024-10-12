@@ -1,5 +1,4 @@
 use ndarray::{array, concatenate, s, Array2, Axis};
-use std::cmp::max;
 
 /*
 This code was originally published by the following individuals for use with Scilab:
@@ -162,7 +161,8 @@ fn bb_algorithm(n: usize) -> Array2<i32> {
     for i in 0..n - 1 {
         for j in i + 1..n {
             index += 1;
-            let start_index = max(0, (index - 1) * h_fact.shape()[0]);
+            let maybe_start_index = (index - 1) * h_fact.shape()[0];
+            let start_index = 0.max(maybe_start_index);
             let end_index = index * h_fact.shape()[0];
             for (spot, num) in [i, j].iter().enumerate() {
                 let mut slice = h_array.slice_mut(s![start_index..end_index, *num]);
