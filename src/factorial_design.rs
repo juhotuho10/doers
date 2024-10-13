@@ -29,13 +29,13 @@ Creates a general full-factorial design.
 
 # Parameters
 
-- `levels`: Vec<u16>
+- `levels`: `Vec<u16>`
   A vector indicating the number of levels for each input design factor.
   Each element in the vector represents a different factor and specifies how many levels that factor has.
 
 # Returns
 
-- Result<Array2<u16>, String>
+- `Result<Array2<u16>, String>`
   Returns a design matrix with coded levels ranging from 0 to `k-1` for a `k`-level factor.
   The matrix represents all possible combinations of the levels across all factors.
 
@@ -171,18 +171,13 @@ Generates a Plackett-Burman design.
 
 # Parameter
 
-- `n`: u32
+- `n`: `u32`
   The number of factors for which to create a matrix.
 
 # Returns
 
-- Array2<i32>
+- `Array2<i32>`
   Returns an orthogonal design matrix with `n` columns, one for each factor. The number of rows is the next multiple of 4 higher than `n`. For example, for 1-3 factors, there are 4 rows; for 4-7 factors, there are 8 rows, etc.
-
-# Errors
-
-- Panics if:
-  - The design fails when `reduction` is too large compared to the values of `levels`.
 
 # Examples
 
@@ -293,7 +288,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
 
  # Returns
 
- - `Result<Vec<Array2<u16>>, String>` `n` amount of complementary Array2<u16> matrices that have complementary designs,
+ - `Result<Vec<Array2<u16>>, String>` with `n` amount of complementary `Array2<u16>` matrices that have complementary designs,
     where the design size will be reduced down by reduction size
 
  # Errors
@@ -560,13 +555,13 @@ Create a 2-level fractional-factorial design with a generator string.
 
 # Parameter
 
-- design: `&str`:
+- `design`: `&str`:
   A string, consisting of lowercase, uppercase letters or a negative operator "-"
   though all charactes will be changed into lower case
 
 # Returns
 
-- Array2<i32>
+- `Array2<i32>`
   ff2n design of the individual characters as well as the combinatory designs for the characters
 
 # Notes
@@ -591,7 +586,7 @@ but also have a conditional one that is the negative product of a and b
 use doers::factorial_design::fracfact;
 let example_array = fracfact("a b c -ab");
 //
-// resulting Array2<i32>:
+// resulting `Array2<i32>`:
 //
 //          a   b   c  -ab
 // array([[-1, -1, -1, -1],

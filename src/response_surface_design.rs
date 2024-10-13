@@ -61,7 +61,11 @@ Creates a Box-Behnken design.
 Generate a Box-Behnken design for 3 factors with 3 center points:
 
 ```rust
-// bbdesign(3, Some(3));
+use doers::response_surface_design::bbdesign_center;
+let n = 3;
+let center = 3;
+let output = bbdesign_center(n, center);
+
 // Expected output:
 // array([[-1.0, -1.0,  0.0],
 //        [ 1.0, -1.0,  0.0],
@@ -118,7 +122,9 @@ Generates a Box-Behnken design.
 Generate a Box-Behnken design for 3 factors:
 
 ```rust
-// bbdesign(3);
+use doers::response_surface_design::bbdesign;
+let n = 3;
+let output = bbdesign(n);
 // Expected output:
 // array([[-1.0, -1.0,  0.0],
 //        [ 1.0, -1.0,  0.0],
@@ -206,36 +212,33 @@ Generates a Central Composite Design (CCD).
 
 # Errors
 
-- Returns a error string if n is too small
+- Returns a error string if n is less than 2
 
 # Example
 
 Generate a CCD for 3 factors:
 ```rust
-//ccdesign(3, None, None, None);
+use doers::response_surface_design::{Alpha, Face, ccdesign};
+
+let n = 2;
+let center = [3, 2];
+let alpha = Alpha::Orthogonal;
+let face = Face::Circumscribed;
+let output = ccdesign(n, &center, alpha, face);
 // Expected output:
-//    Array2([[-1.        , -1.        , -1.        ],
-//            [ 1.        , -1.        , -1.        ],
-//            [-1.        ,  1.        , -1.        ],
-//            [ 1.        ,  1.        , -1.        ],
-//            [-1.        , -1.        ,  1.        ],
-//            [ 1.        , -1.        ,  1.        ],
-//            [-1.        ,  1.        ,  1.        ],
-//            [ 1.        ,  1.        ,  1.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [-1.82574186,  0.        ,  0.        ],
-//            [ 1.82574186,  0.        ,  0.        ],
-//            [ 0.        , -1.82574186,  0.        ],
-//            [ 0.        ,  1.82574186,  0.        ],
-//            [ 0.        ,  0.        , -1.82574186],
-//            [ 0.        ,  0.        ,  1.82574186],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ],
-//            [ 0.        ,  0.        ,  0.        ]])
+//    Array2([[-1.0,       -1.0      ],
+//            [ 1.0,       -1.0      ],
+//            [-1.0,        1.0      ],
+//            [ 1.0,        1.0      ],
+//            [ 0.0,        0.0      ],
+//            [ 0.0,        0.0      ],
+//            [ 0.0,        0.0      ],
+//            [-1.3093073,  0.0      ],
+//            [ 1.3093073,  0.0      ],
+//            [ 0.0,       -1.3093073],
+//            [ 0.0,        1.3093073],
+//            [ 0.0,        0.0      ],
+//            [ 0.0,        0.0      ]],)
 ```
 */
 #[allow(dead_code, clippy::cast_precision_loss)] // ff2n values will never lose precision with f32
@@ -320,17 +323,24 @@ Generates the star points for various design matrices.
 
 # Example
 
-Generate star points for a 3-variable design:
+Generate star points for a 2-variable design:
 
 ```rust
-// star(3, None, None);
+use doers::response_surface_design::{Alpha, star};
+let n = 2;
+let center = [4, 2];
+let alpha = Alpha::Orthogonal;
+let (output, a) = star(n, alpha, &center);
 // Expected output for H (design matrix):
-// array([[-1.0,  0.0,  0.0],
-//        [ 1.0,  0.0,  0.0],
-//        [ 0.0, -1.0,  0.0],
-//        [ 0.0,  1.0,  0.0],
-//        [ 0.0,  0.0, -1.0],
-//        [ 0.0,  0.0,  1.0]])
+// array([[-1.2247449, 0.0      ],
+//         [ 1.2247449, 0.0      ],
+//         [ 0.0,      -1.2247449],
+//         [ 0.0,       1.2247449]])
+//
+// Expected a:
+// 1.2247449
+
+
 ```
 */
 pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
