@@ -50,8 +50,11 @@ Creates a Box-Behnken design.
 
 # Returns
 
-- `mat`: `Array2<i32>`
+- `mat`: `Result<Array2<i32>, String>`
   Returns the design matrix. This matrix includes all combinations of levels for each factor specified by `n`, alongside the specified number of center points.
+
+# Errors
+- Will return an error string if the `n` is less than 3
 
 # Example
 

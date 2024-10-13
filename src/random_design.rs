@@ -43,6 +43,9 @@ Generates a classic latin-hypercube design.
 - `H`: `Array2<f32>`
   `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
+# Panics
+- The expect shouldn't be able to fail
+
 # Example
 
 A 4-sample design:
@@ -88,7 +91,9 @@ pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
 
     for i in 0..n {
         let mut row = h_array.row_mut(i);
-        row.as_slice_mut().unwrap().shuffle(&mut thread_rng());
+        row.as_slice_mut()
+            .expect("will never fail")
+            .shuffle(&mut thread_rng());
     }
 
     h_array = h_array.t().to_owned();
@@ -202,6 +207,10 @@ let example_array = lhs_maximin(n, samples, random_state, iterations);
 //  [0.07169747, 0.93537205, 0.69658417,  0.87581944]]
 ```
 
+# Panics
+
+Should never panic
+
 # Guarantees
 
 None. But columns tend to be equally spaced since that is what the function tries to iterate over
@@ -219,7 +228,7 @@ pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16)
         let min_dist = *dist_array
             .iter()
             .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
-            .unwrap();
+            .unwrap(); // Safe since will always have a valid comparison order
         if min_dist > max_dist {
             max_dist = min_dist;
             h_array = h_candidate;
@@ -315,6 +324,10 @@ Generates a classic latin-hypercube design.
 - `H`: `Array2<f32>`
   `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
 
+# Panics
+  Could in theory panic if `avg_dist` is full of Nan values going into `argmin_ignore_nan`
+  Though this should't be possible
+
 # Example
 
 A 4-sample design:
@@ -362,6 +375,7 @@ pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
             .map(|row| mean_of_first_two(&row.to_owned()))
             .collect();
 
+        dbg!(&avg_dist);
         let min_l = argmin_ignore_nan(&avg_dist).expect("We should have min index");
 
         for j in 0..d_ij.ncols() {
@@ -699,8 +713,8 @@ fn argmin_ignore_nan(vec: &[f32]) -> Option<usize> {
                 Some((index, value))
             }
         })
-        .min_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Equal))
-        .map(|(index, _)| index)
+        .min_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Equal)) // min by value
+        .map(|(index, _)| index) // index of the value
 }
 
 /**
@@ -755,10 +769,10 @@ mod tests {
     use ndarray::{Array3, ArrayBase, Data, Dimension};
 
     // ######################################### helper functions ######################################
-    fn sort_ndarray_array1(array: &mut Array1<f32>) {
+    fn sort_ndarray_array1(array: Array1<f32>) -> Array1<f32> {
         let mut vec = array.to_vec();
         vec.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-        *array = Array1::from(vec);
+        Array1::from(vec)
     }
 
     fn arrays_are_close<S, D>(a: &ArrayBase<S, D>, b: &ArrayBase<S, D>, tolerance: f32) -> bool
@@ -896,12 +910,12 @@ mod tests {
 
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..=samples]);
-            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            sort_ndarray_array1(&mut center);
+            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            let sorted_center = sort_ndarray_array1(center);
 
             for col in arr.axis_iter(Axis(1)) {
-                sort_ndarray_array1(&mut col.to_owned());
-                assert_eq!(center, col);
+                let sorted_col = sort_ndarray_array1(col.to_owned());
+                assert_eq!(sorted_center, sorted_col);
             }
         }
 
@@ -917,15 +931,15 @@ mod tests {
 
             let a = cut.slice(s![..samples]);
             let b = cut.slice(s![1..=samples]);
-            let mut center = ((&a + &b) / 2.).mapv(|x| x as f32);
-            sort_ndarray_array1(&mut center);
+            let center = ((&a + &b) / 2.).mapv(|x| x as f32);
+            let sorted_center = sort_ndarray_array1(center);
 
             for col in arr.axis_iter(Axis(1)) {
-                sort_ndarray_array1(&mut col.to_owned());
+                let sorted_col = sort_ndarray_array1(col.to_owned());
 
                 assert!(arrays_are_close(
-                    &center,
-                    &col.to_owned(),
+                    &sorted_center,
+                    &sorted_col,
                     0.5 / (samples as f32)
                 ));
             }

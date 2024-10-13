@@ -14,7 +14,8 @@
     clippy::must_use_candidate,
     clippy::cast_precision_loss,
     clippy::similar_names,
-    clippy::unreadable_literal
+    clippy::unreadable_literal,
+    clippy::needless_pass_by_value
 )]
 pub mod factorial_design;
 pub mod random_design;

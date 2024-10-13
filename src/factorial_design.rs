@@ -296,7 +296,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
  - `Result<Vec<Array2<u16>>, String>` `n` amount of complementary Array2<u16> matrices that have complementary designs,
     where the design size will be reduced down by reduction size
 
- # Error
+ # Errors
 
  - Returns a error string:
    If input is invalid or if design construction fails. The design can fail
@@ -578,6 +578,10 @@ let design = "a b ab"
 
 then "a" and "b" are the main factors, while the 3rd factor is the product of the first two.
 
+# Panics
+
+Should never panic despite having expect and unwrap
+
 # Examples
 
 Generate a conditional design where we have designs for a b and c
@@ -606,7 +610,7 @@ pub fn fracfact(design: &str) -> Array2<i32> {
     let design = design.as_str();
 
     // separate letters and remove "-" and "+" from them
-    let separator_regex = Regex::new(r"\+|\s|\-").expect("regex error");
+    let separator_regex = Regex::new(r"\+|\s|\-").expect("regex error"); // hardcoded regex wont panic
     let char_splits: Vec<&str> = separator_regex
         .split(design)
         .filter(|x| !x.is_empty())
@@ -627,7 +631,7 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         .collect_vec();
 
     // new splits with the "+" and "-" included with the letters
-    let separator_regex = Regex::new(r"\s").expect("regex error");
+    let separator_regex = Regex::new(r"\s").expect("regex error"); // hardcoded regex wont panic
     let splits: Vec<&str> = separator_regex.split(design).collect();
 
     // indexes that are marked negative
@@ -638,7 +642,7 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         .collect_vec();
 
     // ff2n design of the main factors
-    let h_single = ff2n(single_letter_i.len()).unwrap();
+    let h_single = ff2n(single_letter_i.len()).expect("too many letters"); // single letters will never be over the len needed for ff2n panics
 
     // assign the designs at the correct indexes in the final design
     let mut h_combined: Array2<i32> = Array::zeros((h_single.shape()[0], splits.len()));
@@ -647,10 +651,12 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         into.assign(&array);
     }
 
-    // creating a map to map the main factor chars to their indexes in the main design
+    // creating a map to map the main factor single chars to their indexes in the main design
     let mut char_to_i: HashMap<char, usize> = HashMap::new();
-    for i in single_letter_i {
-        char_to_i.insert(char_splits[i].chars().next().unwrap(), i);
+    for &i in &single_letter_i {
+        if let Some(first_char) = char_splits[i].chars().next() {
+            char_to_i.insert(first_char, i);
+        }
     }
 
     for i in multi_letter_i {
