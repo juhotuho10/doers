@@ -1,6 +1,27 @@
 [package]
+categories = [
+  "mathematics",
+  "data-structures",
+  "scientific-computing",
+  "simulation",
+  "algorithmic",
+  "optimization",
+]
+description = "Rust crate for generating Design Of Experiments (DOE)"
+documentation = "https://docs.rs/doers"
 edition = "2021"
+keywords = [
+  "doe",
+  "design-of-experiments",
+  "statistics",
+  "simulation",
+  "optimization",
+  "uncertainty-quantification",
+  "statistical-design",
+]
+license = "BSD-3-Clause"
 name = "doers"
+repository = "https://github.com/juhotuho10/doers"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,4 +30,4 @@ version = "0.1.0"
 itertools = "0.13.0"
 ndarray = "0.16.1"
 ndarray-rand = "0.15.0"
-regex = "1.10.6"
+regex = "1.11.0"

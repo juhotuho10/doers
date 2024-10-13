@@ -4,7 +4,7 @@
 
 A Rust port of [pyDOE2](https://github.com/clicumu/pyDOE2)
 
-Rust crate for generating Design Of Experiments
+Rust crate for generating Design Of Experiments (DOE)
 
 
 TODO
