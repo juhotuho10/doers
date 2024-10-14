@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use itertools::Itertools;
 use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayBase, ArrayViewMut1, Axis};
 use regex::Regex;
@@ -20,7 +21,7 @@ Converted to python and worked on by:
     git repo: https://github.com/clicumu/pyDOE2
 
 Converted to Rust and worked on by:
-    Copyright (c) 2024, Juho Naatula
+    Copyright (c) 2024, Juho N
     git repo: https://github.com/juhotuho10/doers
 */
 
@@ -134,7 +135,7 @@ Creates a 2-Level full-factorial design.
 
 # Errors
 
-- Returns an error string if `n` is too large (in the thousands) and 2^n causes u64 to overflow
+- Returns an error string if `n` is too large (n = 64) and 2^n causes u64 to overflow
 
 # Example
 
@@ -156,7 +157,6 @@ let example_array = ff2n(3);
 //        [ 1.,  1.,  1.]])
 ```
 */
-#[allow(dead_code)]
 pub fn ff2n(n: usize) -> Result<Array2<i32>, String> {
     let vec: Vec<u16> = vec![2; n];
 
@@ -198,7 +198,6 @@ let example_array = pbdesign(5);
 //        [ 1,  1,  1,  1,  1]])
 ```
 */
-#[allow(dead_code)]
 pub fn pbdesign(n: u32) -> Array2<i32> {
     let keep = n as usize;
     let n = n as f64;
@@ -281,14 +280,14 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
    Reduction factor (greater than 1). A larger `reduction` means fewer
    experiments in the design and more possible complementary designs.
 
- - `n`: usize
+ - `n_designs`: usize
    Number of complementary GSD-designs. The complementary
    designs are balanced analogous to fold-over in two-level fractional
    factorial designs.
 
  # Returns
 
- - `Result<Vec<Array2<u16>>, String>` with `n` amount of complementary `Array2<u16>` matrices that have complementary designs,
+ - `Result<Vec<Array2<u16>>, String>` with `n_designs` amount of complementary `Array2<u16>` matrices that have complementary designs,
     where the design size will be reduced down by reduction size
 
  # Errors
@@ -391,7 +390,6 @@ let example_array = gsd(&levels, reductions, n_arrays);
  - Surowiec, Izabella, et al. "Generalized Subset Designs in Analytical Chemistry." Analytical Chemistry 89.12 (2017): 6491-6497. <https://doi.org/10.1021/acs.analchem.7b00506>
  - Vikstrom, Ludvig, et al. Computer-implemented systems and methods for generating generalized fractional designs. US9746850 B2, filed May 9, 2014, and issued August 29, 2017. <http://www.google.se/patents/US9746850>
 */
-#[allow(dead_code)]
 pub fn gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Array2<u16>>, String> {
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
@@ -599,7 +597,6 @@ let example_array = fracfact("a b c -ab");
 //        [ 1,  1,  1, -1]])
 ```
 */
-#[allow(dead_code)]
 pub fn fracfact(design: &str) -> Array2<i32> {
     let design = design.to_lowercase();
     let design = design.as_str();

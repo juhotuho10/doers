@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use ndarray::{s, stack, Array, Array1, Array2, ArrayBase, Axis, Zip};
 use ndarray_rand::rand::{rngs::SmallRng, seq::SliceRandom, thread_rng, Rng, SeedableRng};
 use ndarray_rand::rand_distr::{Distribution, Uniform};
@@ -20,7 +21,7 @@ Converted to python and worked on by:
     git repo: https://github.com/clicumu/pyDOE2
 
 Converted to Rust and worked on by:
-    Copyright (c) 2024, Juho Naatula
+    Copyright (c) 2024, Juho N
     git repo: https://github.com/juhotuho10/doers
 */
 
@@ -41,7 +42,7 @@ Generates a classic latin-hypercube design.
 # Returns
 
 - `H`: `Array2<f32>`
-  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
+  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced vertically
 
 # Panics
 - The expect shouldn't be able to fail
@@ -68,7 +69,6 @@ None. But columns tend to be equally spaced since in the case of samples = 4
 Array1s with uniform distribution are scaled with  another array: [0.25, 0.5, 0.75, 1]
 and then shuffled
 */
-#[allow(dead_code)]
 pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     // Generate a random array using `rng`
     let mut rng = SmallRng::seed_from_u64(random_state);
@@ -118,7 +118,7 @@ Generates a latin-hypercube design with equal spacing between each value.
 # Returns
 
 - `H`: `Array2<f32>`
-  `n` by `samples` design matrix where the columns are random but tend to have values that are somewhat equally spaced
+  `n` by `samples` design matrix where the columns are random but have values that are equally spaced vertically
 
 # Example
 
@@ -143,7 +143,6 @@ guaranteed to be equally spaced, startin from 0.5/`samples` and jumping 1/`sampl
 in case of `samples` = 4
 starting from 0.125 and continuing in 0.25 steps
 */
-#[allow(dead_code)]
 pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     // Generate a random array using `rng`
     let mut rng = SmallRng::seed_from_u64(random_state);
@@ -215,7 +214,6 @@ Should never panic
 
 None. But columns tend to be equally spaced since that is what the function tries to iterate over
 */
-#[allow(dead_code)]
 pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut max_dist = 0.;
     let mut h_array: Array2<f32> = Array2::from_elem((n, samples), 0.);
@@ -280,7 +278,6 @@ let example_array = lhs_correlate(n, samples, random_state, iterations);
 
 None. Tries to aim at the design being more chaotic since the correlation of the design is minimized through iteration
 */
-#[allow(dead_code)]
 pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut mincorr: f32 = f32::INFINITY;
     let mut h_array = Array2::<f32>::zeros((samples, n));
@@ -350,7 +347,6 @@ Guarantees that in every column, there is a random value in equally spaced 1/sam
 
 In the case of samples = 4, there will be a value between 0.0 - 0.25, another between 0.25 - 0.5 etc. and the ranges have uniform distribution
 */
-#[allow(dead_code)]
 pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
     let mut rng = SmallRng::seed_from_u64(random_state);
 
@@ -437,6 +433,7 @@ fn euclidean_distance(a: &Array1<f32>, b: &Array1<f32>) -> f32 {
         .sum::<f32>()
         .sqrt()
 }
+
 /**
 Computes the pairwise Euclidean distances between rows in a 2D array.
 
@@ -761,7 +758,6 @@ fn argsort_axis0(array: &Array2<f32>) -> Array2<usize> {
 // ##############################################################################################################
 
 #[cfg(test)]
-#[allow(dead_code)]
 mod tests {
 
     // Import the outer module to use the function to be tested.

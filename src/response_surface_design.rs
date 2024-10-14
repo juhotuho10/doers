@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use ndarray::{array, concatenate, s, Array2, Axis};
 
 /*
@@ -17,20 +18,19 @@ Converted to python and worked on by:
     git repo: https://github.com/clicumu/pyDOE2
 
 Converted to Rust and worked on by:
-    Copyright (c) 2024, Juho Naatula
+    Copyright (c) 2024, Juho N
     git repo: https://github.com/juhotuho10/doers
 */
 
 // Enum for star() function for the alpha variable
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Alpha {
     Orthogonal,
     Rotatable,
     Faced,
 }
+
 // Enum for star() function for the Face variable
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Face {
     Inscribed,
@@ -84,7 +84,6 @@ let output = bbdesign_center(n, center);
 //        [ 0.0,  0.0,  0.0]])
 ```
 */
-#[allow(dead_code)]
 pub fn bbdesign_center(n: usize, center: usize) -> Result<Array2<i32>, String> {
     if n < 3 {
         return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
@@ -143,7 +142,6 @@ let output = bbdesign(n);
 //        [ 0.0,  0.0,  0.0]])
 ```
 */
-#[allow(dead_code)]
 pub fn bbdesign(n: usize) -> Result<Array2<i32>, String> {
     if n < 3 {
         return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
