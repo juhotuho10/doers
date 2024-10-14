@@ -8,7 +8,6 @@ description = "Rust crate for generating Design Of Experiments (DOE)"
 documentation = "https://docs.rs/doers"
 edition = "2021"
 keywords = [
-  "doe",
   "design-of-experiments",
   "experiments",
   "optimization",
