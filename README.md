@@ -2,7 +2,7 @@
 [![Codecov](https://codecov.io/github/juhotuho10/doers/coverage.svg?branch=master)](https://app.codecov.io/gh/juhotuho10/doers)
 [![Dependency status](https://deps.rs/repo/github/juhotuho10/doers/status.svg)](https://deps.rs/repo/github/juhotuho10/doers)
 
-A Rust port of [pyDOE2](https://github.com/clicumu/pyDOE2)
+A Rust port of [pyDOE](https://github.com/tisimst/pyDOE) and [pyDOE2](https://github.com/clicumu/pyDOE2)
 
 Rust crate for generating Design Of Experiments (DOE)
 
@@ -33,7 +33,8 @@ converted to Python and worked on by:
 - git repo: [pyDOE2](https://github.com/clicumu/pyDOE2)
 
 Converted to Rust and worked on by:
-- Copyright (C) 2024 - Juho Naatula
+- Copyright (C) 2024 - Juho N
+- git repo: [doers](https://github.com/juhotuho10/doers)
 - Cargo.io page: doers [to be added]
 
 References
