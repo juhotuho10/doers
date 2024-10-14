@@ -1,11 +1,8 @@
 [package]
 categories = [
-  "mathematics",
-  "data-structures",
-  "scientific-computing",
-  "simulation",
-  "algorithmic",
-  "optimization",
+  "Algorithms",
+  "Mathematics",
+  "Science",
 ]
 description = "Rust crate for generating Design Of Experiments (DOE)"
 documentation = "https://docs.rs/doers"
@@ -13,8 +10,7 @@ edition = "2021"
 keywords = [
   "doe",
   "design-of-experiments",
-  "statistics",
-  "simulation",
+  "experiments",
   "optimization",
   "uncertainty-quantification",
   "statistical-design",
