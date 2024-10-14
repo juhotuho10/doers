@@ -16,7 +16,7 @@ TODO
 Credits
 -------
 
-original Scilab code was originally made by:    
+original Scilab code was originally made by:
 - Copyright (C) 2012 - Maria Christopoulou
 - Copyright (C) 2012 - 2013 - Michael Baudin
 - Copyright (C) 2010 - 2011 - INRIA - Michael Baudin
@@ -34,8 +34,9 @@ converted to Python and worked on by:
 
 Converted to Rust and worked on by:
 - Copyright (C) 2024 - Juho N
+
 - git repo: [doers](https://github.com/juhotuho10/doers)
-- Cargo.io page: doers [to be added]
+- Cargo.io page: [doers](https://crates.io/crates/doers)
 
 References
 ----------
