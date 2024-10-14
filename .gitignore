@@ -22,3 +22,6 @@ Cargo.lock
 
 # rust test file
 main.rs
+
+# cargo config
+.cargo/*
