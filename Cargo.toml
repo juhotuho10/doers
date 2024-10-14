@@ -1,17 +1,17 @@
 [package]
 categories = [
-  "Algorithms",
-  "Mathematics",
-  "Science",
+  "algorithms",
+  "mathematics",
+  "science",
 ]
 description = "Rust crate for generating Design Of Experiments (DOE)"
 documentation = "https://docs.rs/doers"
 edition = "2021"
 keywords = [
-  "design-of-experiments",
+  "DoE",
   "experiments",
   "optimization",
-  "uncertainty-quantification",
+  "design",
   "statistical-design",
 ]
 license = "BSD-3-Clause"
