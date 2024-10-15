@@ -17,7 +17,7 @@ keywords = [
 license = "BSD-3-Clause"
 name = "doers"
 repository = "https://github.com/juhotuho10/doers"
-version = "0.1.0"
+version = "0.2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

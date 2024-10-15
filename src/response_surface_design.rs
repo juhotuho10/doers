@@ -42,7 +42,7 @@ Creates a Box-Behnken design.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors in the design.
 
 - `center`: `usize`
@@ -50,7 +50,7 @@ Creates a Box-Behnken design.
 
 # Returns
 
-- `mat`: `Result<Array2<i32>, String>`
+- `mat`: `Result<Array2<i16>, String>`
   Returns the design matrix. This matrix includes all combinations of levels for each factor specified by `n`, alongside the specified number of center points.
 
 # Errors
@@ -67,31 +67,30 @@ let center = 3;
 let output = bbdesign_center(n, center);
 
 // Expected output:
-// array([[-1.0, -1.0,  0.0],
-//        [ 1.0, -1.0,  0.0],
-//        [-1.0,  1.0,  0.0],
-//        [ 1.0,  1.0,  0.0],
-//        [-1.0,  0.0, -1.0],
-//        [ 1.0,  0.0, -1.0],
-//        [-1.0,  0.0,  1.0],
-//        [ 1.0,  0.0,  1.0],
-//        [ 0.0, -1.0, -1.0],
-//        [ 0.0,  1.0, -1.0],
-//        [ 0.0, -1.0,  1.0],
-//        [ 0.0,  1.0,  1.0],
-//        [ 0.0,  0.0,  0.0],
-//        [ 0.0,  0.0,  0.0],
-//        [ 0.0,  0.0,  0.0]])
+// array([[-1, -1,  0],
+//        [ 1, -1,  0],
+//        [-1,  1,  0],
+//        [ 1,  1,  0],
+//        [-1,  0, -1],
+//        [ 1,  0, -1],
+//        [-1,  0,  1],
+//        [ 1,  0,  1],
+//        [ 0, -1, -1],
+//        [ 0,  1, -1],
+//        [ 0, -1,  1],
+//        [ 0,  1,  1],
+//        [ 0,  0,  0],
+//        [ 0,  0,  0],
+//        [ 0,  0,  0]])
 ```
 */
-pub fn bbdesign_center(n: usize, center: usize) -> Result<Array2<i32>, String> {
+pub fn bbdesign_center(n: u16, center: usize) -> Result<Array2<i16>, String> {
     if n < 3 {
         return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
     }
-
     let mut h_array = bb_algorithm(n);
 
-    let center_matrix = Array2::<i32>::zeros((center, n));
+    let center_matrix = Array2::<i16>::zeros((center, n as usize));
 
     h_array = concatenate![Axis(0), h_array, center_matrix];
 
@@ -103,17 +102,17 @@ Generates a Box-Behnken design.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors in the design. This value determines the complexity of the design matrix generated.
 
 # Returns
 
-- `mat`: `Array2<f64>`
+- `mat`: `Array2<i16>`
   Returns the design matrix as a 2D array. The matrix represents the Box-Behnken design for the specified number of factors, with levels coded as -1, 0, and 1. The design includes all combinations of two levels at a time, with the third factor set to 0, and additional center points.
 
 # Errors
 
-- Returns a error string if n is too small
+- Will return an error string if the n is less than 3
 
 
 # Example
@@ -125,24 +124,24 @@ use doers::response_surface_design::bbdesign;
 let n = 3;
 let output = bbdesign(n);
 // Expected output:
-// array([[-1.0, -1.0,  0.0],
-//        [ 1.0, -1.0,  0.0],
-//        [-1.0,  1.0,  0.0],
-//        [ 1.0,  1.0,  0.0],
-//        [-1.0,  0.0, -1.0],
-//        [ 1.0,  0.0, -1.0],
-//        [-1.0,  0.0,  1.0],
-//        [ 1.0,  0.0,  1.0],
-//        [ 0.0, -1.0, -1.0],
-//        [ 0.0,  1.0, -1.0],
-//        [ 0.0, -1.0,  1.0],
-//        [ 0.0,  1.0,  1.0],
-//        [ 0.0,  0.0,  0.0],
-//        [ 0.0,  0.0,  0.0],
-//        [ 0.0,  0.0,  0.0]])
+// array([[-1, -1,  0],
+//        [ 1, -1,  0],
+//        [-1,  1,  0],
+//        [ 1,  1,  0],
+//        [-1,  0, -1],
+//        [ 1,  0, -1],
+//        [-1,  0,  1],
+//        [ 1,  0,  1],
+//        [ 0, -1, -1],
+//        [ 0,  1, -1],
+//        [ 0, -1,  1],
+//        [ 0,  1,  1],
+//        [ 0,  0,  0],
+//        [ 0,  0,  0],
+//        [ 0,  0,  0]])
 ```
 */
-pub fn bbdesign(n: usize) -> Result<Array2<i32>, String> {
+pub fn bbdesign(n: u16) -> Result<Array2<i16>, String> {
     if n < 3 {
         return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
     }
@@ -150,20 +149,24 @@ pub fn bbdesign(n: usize) -> Result<Array2<i32>, String> {
     let mut h_array = bb_algorithm(n);
     let points = [0, 0, 0, 3, 3, 6, 6, 6, 8, 9, 10, 12, 12, 13, 14, 15, 16];
 
-    let center: usize = if n <= 16 { points[n] } else { n };
+    let center: usize = if n <= 16 {
+        points[n as usize]
+    } else {
+        n as usize
+    };
 
-    let center_matrix = Array2::<i32>::zeros((center, n));
+    let center_matrix = Array2::<i16>::zeros((center, n as usize));
     h_array = concatenate![Axis(0), h_array, center_matrix];
 
     Ok(h_array)
 }
 
 /// computation algorithm for bbdesign
-fn bb_algorithm(n: usize) -> Array2<i32> {
+fn bb_algorithm(n: u16) -> Array2<i16> {
     let h_fact = super::factorial_design::ff2n(2).unwrap(); // we know this to be valid
 
-    let nb_lines = (n * (n - 1) / 2) * h_fact.shape()[0];
-    let mut h_array = Array2::<i32>::zeros((nb_lines, n));
+    let nb_lines: usize = (n * (n - 1) / 2) as usize * h_fact.shape()[0];
+    let mut h_array = Array2::<i16>::zeros((nb_lines, n as usize));
     let mut index = 0;
     for i in 0..n - 1 {
         for j in i + 1..n {
@@ -172,7 +175,7 @@ fn bb_algorithm(n: usize) -> Array2<i32> {
             let start_index = 0.max(maybe_start_index);
             let end_index = index * h_fact.shape()[0];
             for (spot, num) in [i, j].iter().enumerate() {
-                let mut slice = h_array.slice_mut(s![start_index..end_index, *num]);
+                let mut slice = h_array.slice_mut(s![start_index..end_index, *num as usize]);
                 let i_replacement = h_fact.slice(s![.., spot]);
                 slice.assign(&i_replacement);
             }
@@ -186,7 +189,7 @@ Generates a Central Composite Design (CCD).
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors in the design.
 
 - `center`: `&[u32]`
@@ -240,7 +243,7 @@ let output = ccdesign(n, &center, alpha, face);
 ```
 */
 #[allow(dead_code, clippy::cast_precision_loss)] // ff2n values will never lose precision with f32
-pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
+pub fn ccdesign(n: u16, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
     use super::factorial_design::ff2n;
 
     if n < 2 {
@@ -285,8 +288,8 @@ pub fn ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Ar
         }
     };
 
-    let c1 = Array2::<i32>::zeros((center[0] as usize, n)).mapv(|x| x as f32);
-    let c2 = Array2::<i32>::zeros((center[1] as usize, n)).mapv(|x| x as f32);
+    let c1 = Array2::<i32>::zeros((center[0] as usize, n as usize)).mapv(|x| x as f32);
+    let c2 = Array2::<i32>::zeros((center[1] as usize, n as usize)).mapv(|x| x as f32);
     let h_array = concatenate![Axis(0), h1, c1, h2, c2];
 
     Ok(h_array)
@@ -297,7 +300,7 @@ Generates the star points for various design matrices.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of variables in the design.
 
 - `alpha`: `&str`
@@ -341,7 +344,7 @@ let (output, a) = star(n, alpha, &center);
 
 ```
 */
-pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
+pub fn star(n: u16, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
     // Star points at the center of each face of the factorial
 
     let a: f64 = match alpha {
@@ -362,9 +365,10 @@ pub fn star(n: usize, alpha: Alpha, center: &[u32]) -> (Array2<f32>, f32) {
     };
 
     // Create the actual matrix now.
-    let mut h_array: Array2<f64> = Array2::<f64>::zeros((2 * n, n));
+    let mut h_array: Array2<f64> = Array2::<f64>::zeros((2 * n as usize, n as usize));
     let arr = array![-1.0, 1.0];
     for i in 0..n {
+        let i = i as usize;
         let index = 2 * i;
         let mut slice = h_array.slice_mut(s![index..index + 2, i]);
         // Use assign here to copy data from `arr` into `h_array`

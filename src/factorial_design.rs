@@ -125,17 +125,21 @@ Creates a 2-Level full-factorial design.
 
 # Parameters
 
-- `n`: usize
+- `n`: u16
   The number of factors in the design. This determines the size and complexity of the resulting matrix.
 
 # Returns
 
-- `Result<Array2<i32>, String>`
+- `Result<Array2<i16>, String>`
   The design matrix with coded levels -1 and 1, representing the two levels for each factor across all possible combinations.
 
 # Errors
 
 - Returns an error string if `n` is too large (n = 64) and 2^n causes u64 to overflow
+
+# Panics
+
+ - will never panic despite having an unwrap
 
 # Example
 
@@ -145,24 +149,24 @@ Generate a full-factorial design for 3 factors:
 use doers::factorial_design::ff2n;
 let example_array = ff2n(3);
 //
-// resulting Array2<i32>:
+// resulting Array2<i16>:
 //
-// array([[-1., -1., -1.],
-//        [ 1., -1., -1.],
-//        [-1.,  1., -1.],
-//        [ 1.,  1., -1.],
-//        [-1., -1.,  1.],
-//        [ 1., -1.,  1.],
-//        [-1.,  1.,  1.],
-//        [ 1.,  1.,  1.]])
+// array([[-1, -1, -1],
+//        [ 1, -1, -1],
+//        [-1,  1, -1],
+//        [ 1,  1, -1],
+//        [-1, -1,  1],
+//        [ 1, -1,  1],
+//        [-1,  1,  1],
+//        [ 1,  1,  1]])
 ```
 */
-pub fn ff2n(n: usize) -> Result<Array2<i32>, String> {
-    let vec: Vec<u16> = vec![2; n];
+pub fn ff2n(n: u16) -> Result<Array2<i16>, String> {
+    let vec: Vec<u16> = vec![2; n.into()];
 
     let return_vec = fullfact(&vec)?;
 
-    let return_vec = return_vec.mapv(|x| x as i32);
+    let return_vec = return_vec.mapv(|x| i16::try_from(x).unwrap()); // unwrap never fails since always under i16::MAX
     Ok(2 * return_vec - 1)
 }
 
@@ -176,7 +180,7 @@ Generates a Plackett-Burman design.
 
 # Returns
 
-- `Array2<i32>`
+- `Array2<i16>`
   Returns an orthogonal design matrix with `n` columns, one for each factor. The number of rows is the next multiple of 4 higher than `n`. For example, for 1-3 factors, there are 4 rows; for 4-7 factors, there are 8 rows, etc.
 
 # Examples
@@ -186,7 +190,7 @@ Generate a design for 5 factors:
 use doers::factorial_design::pbdesign;
 let example_array = pbdesign(5);
 //
-// resulting Array2<i32>:
+// resulting Array2<i16>:
 //
 // array([[-1, -1,  1, -1,  1],
 //        [ 1, -1, -1, -1, -1],
@@ -198,7 +202,7 @@ let example_array = pbdesign(5);
 //        [ 1,  1,  1,  1,  1]])
 ```
 */
-pub fn pbdesign(n: u32) -> Array2<i32> {
+pub fn pbdesign(n: u32) -> Array2<i16> {
     let keep = n as usize;
     let n = n as f64;
 
@@ -265,7 +269,7 @@ pub fn pbdesign(n: u32) -> Array2<i32> {
 
     // Flip the matrix upside down
     let h_flipped: Array2<i32> = h.slice(s![..;-1, ..]).to_owned();
-    h_flipped
+    h_flipped.mapv(|x| x as i16)
 }
 
 /**
@@ -559,7 +563,7 @@ Create a 2-level fractional-factorial design with a generator string.
 
 # Returns
 
-- `Array2<i32>`
+- `Array2<i16>`
   ff2n design of the individual characters as well as the combinatory designs for the characters
 
 # Notes
@@ -584,7 +588,7 @@ but also have a conditional one that is the negative product of a and b
 use doers::factorial_design::fracfact;
 let example_array = fracfact("a b c -ab");
 //
-// resulting `Array2<i32>`:
+// resulting `Array2<i16>`:
 //
 //          a   b   c  -ab
 // array([[-1, -1, -1, -1],
@@ -597,7 +601,7 @@ let example_array = fracfact("a b c -ab");
 //        [ 1,  1,  1, -1]])
 ```
 */
-pub fn fracfact(design: &str) -> Array2<i32> {
+pub fn fracfact(design: &str) -> Array2<i16> {
     let design = design.to_lowercase();
     let design = design.as_str();
 
@@ -634,10 +638,10 @@ pub fn fracfact(design: &str) -> Array2<i32> {
         .collect_vec();
 
     // ff2n design of the main factors
-    let h_single = ff2n(single_letter_i.len()).expect("too many letters"); // single letters will never be over the len needed for ff2n panics
+    let h_single = ff2n(single_letter_i.len() as u16).expect("too many letters"); // single letters will never be over the len needed for ff2n panics
 
     // assign the designs at the correct indexes in the final design
-    let mut h_combined: Array2<i32> = Array::zeros((h_single.shape()[0], splits.len()));
+    let mut h_combined: Array2<i16> = Array::zeros((h_single.shape()[0], splits.len()));
     for (array, i) in h_single.axis_iter(Axis(1)).zip(&single_letter_i) {
         let mut into = h_combined.slice_mut(s![.., *i]);
         into.assign(&array);
