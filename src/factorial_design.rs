@@ -95,20 +95,20 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
     let mut array: Array2<u16> = Array2::<u16>::zeros((num_lines as usize, n));
 
     let mut level_repeat = 1;
-    let mut range_repeat = num_lines as usize;
+    let mut range_repeat = num_lines;
 
     for (i, &level) in levels.iter().enumerate() {
-        range_repeat /= level as usize;
+        range_repeat /= level as u64;
 
         // taking the slice of the array and mutating it in place without copying or moving
         let slice = array.slice_mut(s![.., i]);
         build_level(slice, level, level_repeat, range_repeat);
-        level_repeat *= level as usize;
+        level_repeat *= level;
     }
     Ok(array)
 }
 
-fn build_level(mut output: ArrayViewMut1<u16>, level: u16, repeat: usize, range_repeat: usize) {
+fn build_level(mut output: ArrayViewMut1<u16>, level: u16, repeat: u16, range_repeat: u64) {
     let mut count: usize = 0;
     for _ in 0..range_repeat {
         for j in 0..level {
@@ -280,11 +280,11 @@ pub fn pbdesign(n: u32) -> Array2<i16> {
  - `levels`: array-like
    Number of factor levels per factor in design.
 
- - `reduction`: usize
+ - `reduction`: u16
    Reduction factor (greater than 1). A larger `reduction` means fewer
    experiments in the design and more possible complementary designs.
 
- - `n_designs`: usize
+ - `n_designs`: u16
    Number of complementary GSD-designs. The complementary
    designs are balanced analogous to fold-over in two-level fractional
    factorial designs.
@@ -394,7 +394,7 @@ let example_array = gsd(&levels, reductions, n_arrays);
  - Surowiec, Izabella, et al. "Generalized Subset Designs in Analytical Chemistry." Analytical Chemistry 89.12 (2017): 6491-6497. <https://doi.org/10.1021/acs.analchem.7b00506>
  - Vikstrom, Ludvig, et al. Computer-implemented systems and methods for generating generalized fractional designs. US9746850 B2, filed May 9, 2014, and issued August 29, 2017. <http://www.google.se/patents/US9746850>
 */
-pub fn gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Array2<u16>>, String> {
+pub fn gsd(levels: &[u16], reduction: u16, n_designs: u16) -> Result<Vec<Array2<u16>>, String> {
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
     } else if n_designs < 1 {
@@ -406,8 +406,8 @@ pub fn gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Arr
     }
 
     let partitions: Vec<Vec<Vec<u16>>> = make_partitions(levels, reduction);
-    let latin_square: Array2<u16> = make_latin_square(reduction);
-    let orthogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len());
+    let latin_square: Array2<u16> = make_latin_square(reduction as usize);
+    let orthogonal_arrays: Array3<u16> = make_orthogonal_arrays(&latin_square, levels.len() as u16);
 
     let mut design_vec: Vec<Array2<u16>> = vec![];
 
@@ -417,10 +417,14 @@ pub fn gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Arr
         design_vec.push(design);
     }
     // works even when n > array size
-    Ok(design_vec.iter().take(n_designs).cloned().collect())
+    Ok(design_vec
+        .iter()
+        .take(n_designs as usize)
+        .cloned()
+        .collect())
 }
 
-fn make_partitions(factor_levels: &[u16], num_partitions: usize) -> Vec<Vec<Vec<u16>>> {
+fn make_partitions(factor_levels: &[u16], num_partitions: u16) -> Vec<Vec<Vec<u16>>> {
     // Calculate total partitions and maximum size to initialize the array.
     //let max_size = *factor_levels.iter().max().unwrap_or(&1) as usize;
     let mut partitions_vec: Vec<Vec<Vec<u16>>> = vec![];
@@ -430,7 +434,7 @@ fn make_partitions(factor_levels: &[u16], num_partitions: usize) -> Vec<Vec<Vec<
         for &num_levels in factor_levels {
             let mut part: Vec<u16> = Vec::new();
             for level_i in 1..num_levels {
-                let index = (partition_idx + 1) as u16 + (level_i - 1) * num_partitions as u16;
+                let index = (partition_idx + 1) + (level_i - 1) * num_partitions;
                 if index <= num_levels {
                     part.push(index);
                 }
@@ -450,7 +454,7 @@ fn make_latin_square(n: usize) -> Array2<u16> {
     return_array
 }
 
-fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u16> {
+fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: u16) -> Array3<u16> {
     let first_row = latin_square.slice(s![0, ..]);
 
     let mut a_matrices: Vec<Array2<u16>> = first_row
@@ -458,7 +462,7 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u
         .map(|&v| Array::from_elem((1, 1), v))
         .collect();
 
-    while a_matrices[0].shape()[1] < n_cols {
+    while a_matrices[0].shape()[1] < n_cols as usize {
         let mut new_a_matrices = vec![];
 
         for i in 0..a_matrices.len() {
@@ -485,7 +489,7 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: usize) -> Array3<u
 
         a_matrices = new_a_matrices;
 
-        if a_matrices[0].shape()[1] == n_cols {
+        if a_matrices[0].shape()[1] == n_cols as usize {
             break;
         }
     }

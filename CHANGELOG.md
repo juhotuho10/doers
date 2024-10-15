@@ -12,16 +12,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 
 
 ## [0.2.0] - 2024-10-15
-### Interface breaking chages:
+### Minor interface breaking chages:
+because: for many functions, the return type is wayyy to high compared to what is possible for it return
+         also usize isn't really meant to be an arguement type, so I'm changing that also to u16 as soon as possible
+
 -   ff2n(n: usize) -> Result<Array2<i32>, String>
     changed to 
-    ff2n(n: u16) Result<Array2<i16>, String> 
-    because: to be similar with fullfact interface, also having it be i32 when it can only generate [-1 to 1] values is a little wasteful
+    ff2n(n: u16) Result<Array2<i16>, String>
+
+-   gsd(levels: &[u16], reduction: usize, n_designs: usize) -> Result<Vec<Array2<u16>>, String>
+    changed to
+    gsd(levels: &[u16], reduction: u16, n_designs: u16) -> Result<Vec<Array2<u16>>, String>
 
 -   bbdesign(n: usize) -> Result<Array2<i32>, String> 
     changed to 
     bbdesign(n: u16) -> Result<Array2<i16>, String> 
-    for similar resons as listed above
 
 -   bbdesign_center(n: usize, center: usize) -> Result<Array2<i32>, String>
     changed to 
@@ -42,6 +47,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 -   fracfact(design: &str) -> Array2<i32>
     changed to
     fracfact(design: &str) -> Array2<i16>
+
+-   lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32>
+    changed to
+    lhs_classic(n: u16, samples: u16, random_state: u64) -> Array2<f32>
+
+-   lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32>
+    changed to
+    lhs_centered(n: u16, samples: u16, random_state: u64) -> Array2<f32>
+
+-   lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32>
+    changed to
+    lhs_maximin(n: u16, samples: u16, random_state: u64, iterations: u16) -> Array2<f32>
+
+-   lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32>
+    changed to
+    lhs_correlate(n: u16, samples: u16, random_state: u64, iterations: u16) -> Array2<f32>
+
+-   lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32>
+    changed to 
+    lhs_mu(n: u16, samples: u16, random_state: u64) -> Array2<f32>
+
 
 ### Other changes:
 -   fixing documentation

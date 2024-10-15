@@ -30,10 +30,10 @@ Generates a classic latin-hypercube design.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors to generate samples for.
 
-- `samples`: `usize`
+- `samples`: `u16`
   The number of samples to generate for each factor.
 
 - `random_state`: `u64`
@@ -69,7 +69,9 @@ None. But columns tend to be equally spaced since in the case of samples = 4
 Array1s with uniform distribution are scaled with  another array: [0.25, 0.5, 0.75, 1]
 and then shuffled
 */
-pub fn lhs_classic(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
+pub fn lhs_classic(n: u16, samples: u16, random_state: u64) -> Array2<f32> {
+    let n = n as usize;
+    let samples = samples as usize;
     // Generate a random array using `rng`
     let mut rng = SmallRng::seed_from_u64(random_state);
 
@@ -106,10 +108,10 @@ Generates a latin-hypercube design with equal spacing between each value.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors to generate samples for.
 
-- `samples`: `usize`
+- `samples`: `u16`
   The number of samples to generate for each factor.
 
 - `random_state`: `u64`
@@ -143,7 +145,9 @@ guaranteed to be equally spaced, startin from 0.5/`samples` and jumping 1/`sampl
 in case of `samples` = 4
 starting from 0.125 and continuing in 0.25 steps
 */
-pub fn lhs_centered(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
+pub fn lhs_centered(n: u16, samples: u16, random_state: u64) -> Array2<f32> {
+    let n = n as usize;
+    let samples = samples as usize;
     // Generate a random array using `rng`
     let mut rng = SmallRng::seed_from_u64(random_state);
 
@@ -172,10 +176,10 @@ Generates and iterates over classic latin-hypercube design to make it more equal
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors to generate samples for.
 
-- `samples`: `usize`
+- `samples`: `u16`
   The number of samples to generate for each factor.
 
 - `random_state`: `u64`
@@ -214,9 +218,9 @@ Should never panic
 
 None. But columns tend to be equally spaced since that is what the function tries to iterate over
 */
-pub fn lhs_maximin(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
+pub fn lhs_maximin(n: u16, samples: u16, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut max_dist = 0.;
-    let mut h_array: Array2<f32> = Array2::from_elem((n, samples), 0.);
+    let mut h_array: Array2<f32> = Array2::from_elem((n as usize, samples as usize), 0.);
     let mut rng = SmallRng::seed_from_u64(random_state);
 
     for _ in 0..iterations {
@@ -240,10 +244,10 @@ Generates and iterates over classic latin-hypercube design to make it less corre
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors to generate samples for.
 
-- `samples`: `usize`
+- `samples`: `u16`
   The number of samples to generate for each factor.
 
 - `random_state`: `u64`
@@ -278,9 +282,9 @@ let example_array = lhs_correlate(n, samples, random_state, iterations);
 
 None. Tries to aim at the design being more chaotic since the correlation of the design is minimized through iteration
 */
-pub fn lhs_correlate(n: usize, samples: usize, random_state: u64, iterations: u16) -> Array2<f32> {
+pub fn lhs_correlate(n: u16, samples: u16, random_state: u64, iterations: u16) -> Array2<f32> {
     let mut mincorr: f32 = f32::INFINITY;
-    let mut h_array = Array2::<f32>::zeros((samples, n));
+    let mut h_array = Array2::<f32>::zeros((samples as usize, n as usize));
     let mut rng = SmallRng::seed_from_u64(random_state);
 
     for _ in 0..iterations {
@@ -307,10 +311,10 @@ Generates a classic latin-hypercube design.
 
 # Parameters
 
-- `n`: `usize`
+- `n`: `u16`
   The number of factors to generate samples for.
 
-- `samples`: `usize`
+- `samples`: `u16`
   The number of samples to generate for each factor.
 
 - `random_state`: `u64`
@@ -347,7 +351,9 @@ Guarantees that in every column, there is a random value in equally spaced 1/sam
 
 In the case of samples = 4, there will be a value between 0.0 - 0.25, another between 0.25 - 0.5 etc. and the ranges have uniform distribution
 */
-pub fn lhs_mu(n: usize, samples: usize, random_state: u64) -> Array2<f32> {
+pub fn lhs_mu(n: u16, samples: u16, random_state: u64) -> Array2<f32> {
+    let n = n as usize;
+    let samples = samples as usize;
     let mut rng = SmallRng::seed_from_u64(random_state);
 
     let size = 5 * samples;
@@ -901,6 +907,8 @@ mod tests {
 
             let arr = lhs_centered(n, samples, random_state);
 
+            let samples = samples as usize;
+
             let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
             cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
 
@@ -921,6 +929,8 @@ mod tests {
             let samples = 15;
             let random_state = 42;
             let arr = lhs_mu(n, samples, random_state);
+
+            let samples = samples as usize;
 
             let mut cut: Array1<f64> = Array::linspace(0., 1., samples + 1);
             cut = cut.mapv(|x: f64| (x * 100.).round() / 100.); // rounding the variables to 0.01
