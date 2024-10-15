@@ -30,7 +30,7 @@ because: for many functions, the return type is wayyy to high compared to what i
 
 -   bbdesign_center(n: usize, center: usize) -> Result<Array2<i32>, String>
     changed to 
-    bbdesign_center(n: u16, center: usize) -> Result<Array2<i16>, String>
+    bbdesign_center(n: u16, center: u16) -> Result<Array2<i16>, String>
 
 -   ccdesign(n: usize, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> 
     changed to 

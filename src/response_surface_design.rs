@@ -45,7 +45,7 @@ Creates a Box-Behnken design.
 - `n`: `u16`
   The number of factors in the design.
 
-- `center`: `usize`
+- `center`: `u16`
   The number of center points to include.
 
 # Returns
@@ -84,13 +84,13 @@ let output = bbdesign_center(n, center);
 //        [ 0,  0,  0]])
 ```
 */
-pub fn bbdesign_center(n: u16, center: usize) -> Result<Array2<i16>, String> {
+pub fn bbdesign_center(n: u16, center: u16) -> Result<Array2<i16>, String> {
     if n < 3 {
         return Err("The number of factors in the design (n) must be 3 or higher".to_owned());
     }
     let mut h_array = bb_algorithm(n);
 
-    let center_matrix = Array2::<i16>::zeros((center, n as usize));
+    let center_matrix = Array2::<i16>::zeros((center as usize, n as usize));
 
     h_array = concatenate![Axis(0), h_array, center_matrix];
 
