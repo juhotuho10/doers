@@ -371,14 +371,14 @@ let example_array = gsd(&levels, reductions, n_arrays);
 //  [2, 0],
 //  [2, 2],
 //  [1, 1]],
-
+//
 //  [[0, 1],
 //  [2, 1],
 //  [1, 0],
 //  [1, 2]]]
  ```
 
- If the design fails a `ValueError` is raised:
+ If the design fails a error `String` is raised:
 
 ```rust
 use doers::factorial_design::gsd;
