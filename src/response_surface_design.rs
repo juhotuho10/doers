@@ -1,5 +1,6 @@
 #![allow(dead_code)]
-use ndarray::{array, concatenate, s, Array2, Axis};
+pub use ndarray::Array2;
+use ndarray::{array, concatenate, s, Axis};
 
 /*
 This code was originally published by the following individuals for use with Scilab:

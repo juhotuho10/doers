@@ -1,5 +1,6 @@
 #![allow(dead_code)]
-use ndarray::{s, stack, Array, Array1, Array2, ArrayBase, Axis, Zip};
+pub use ndarray::Array2;
+use ndarray::{s, stack, Array, Array1, ArrayBase, Axis, Zip};
 use ndarray_rand::rand::{rngs::SmallRng, seq::SliceRandom, thread_rng, Rng, SeedableRng};
 use ndarray_rand::rand_distr::{Distribution, Uniform};
 use ndarray_rand::RandomExt;

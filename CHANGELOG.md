@@ -2,15 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) but MINOR version are breaking before 1.0.0
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) but MINOR version before 1.0.0 might be breaking
 
 
-## [Unreleased]
+## [Unreleased] - 2024-12-07
+
 ### Added
 - 
 
 ### Fixed
-- 
+- made Array2 into a pub use so that maybe could use my crate without having to get ndarray separately
 
 ## [0.2.0] - 2024-10-15
 ### Interface breaking chages:

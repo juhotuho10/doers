@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use itertools::Itertools;
-use ndarray::{concatenate, s, Array, Array1, Array2, Array3, ArrayBase, ArrayViewMut1, Axis};
+pub use ndarray::Array2;
+use ndarray::{concatenate, s, Array, Array1, Array3, ArrayBase, ArrayViewMut1, Axis};
 use regex::Regex;
 use std::collections::HashMap;
 
