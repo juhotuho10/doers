@@ -423,15 +423,15 @@ The Euclidean distance is the straight-line distance between two points in Eucli
 # Parameters
 
 - `a`: &Array1<f32>
-    A one-dimensional array representing the coordinates of the first point in n-dimensional space. Each element in the array corresponds to a coordinate in a particular dimension.
+  A one-dimensional array representing the coordinates of the first point in n-dimensional space. Each element in the array corresponds to a coordinate in a particular dimension.
 
 - `b`: Array1<f32>
-    A one-dimensional array representing the coordinates of the second point in n-dimensional space. The length of `b` must match the length of `a` to correctly calculate the distance.
+  A one-dimensional array representing the coordinates of the second point in n-dimensional space. The length of `b` must match the length of `a` to correctly calculate the distance.
 
 # Returns
 
 - `f32`
-    The Euclidean distance between the two points as a floating-point number. The distance is non-negative and represents the "length" of the straight line connecting the two points in n-dimensional space.
+  The Euclidean distance between the two points as a floating-point number. The distance is non-negative and represents the "length" of the straight line connecting the two points in n-dimensional space.
 */
 fn euclidean_distance(a: &Array1<f32>, b: &Array1<f32>) -> f32 {
     a.iter()
@@ -449,13 +449,13 @@ Each row in the input array represents a point in n-dimensional space. This func
 # Parameters
 
 - `input`: &Array2<f32>
-    A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are expected to be `[number_of_points, dimensions_of_each_point]`.
+  A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are expected to be `[number_of_points, dimensions_of_each_point]`.
 
 # Returns
 
 - `Array1<f32>`
-    A one-dimensional array of floating-point numbers, where each element is the Euclidean distance between a pair of points (rows) in the input array.
-    The distances are listed in the order they were computed, which corresponds to a row-wise upper triangular traversal of the pairwise distance matrix, excluding the diagonal.
+  A one-dimensional array of floating-point numbers, where each element is the Euclidean distance between a pair of points (rows) in the input array.
+  The distances are listed in the order they were computed, which corresponds to a row-wise upper triangular traversal of the pairwise distance matrix, excluding the diagonal.
 */
 fn pairwise_euclidean_dist(input: &Array2<f32>) -> Array1<f32> {
     let rows = input.nrows();
@@ -482,16 +482,16 @@ The result is a 2-dimensional array where the element at position (i, j) represe
 # Parameters
 
 - `a`: &Array2<f32>
-    A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_a, dimensions_of_each_point]`.
+  A two-dimensional array where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_a, dimensions_of_each_point]`.
 
 - `b`: &Array2<f32>
-    A two-dimensional array similar to `a`, where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_b, dimensions_of_each_point]`.
-    It is not required for `a` and `b` to have the same number of points (rows), but they must be in the same n-dimensional space (have the same number of columns).
+  A two-dimensional array similar to `a`, where each row represents a point in n-dimensional space. The dimensions of the array are `[number_of_points_b, dimensions_of_each_point]`.
+  It is not required for `a` and `b` to have the same number of points (rows), but they must be in the same n-dimensional space (have the same number of columns).
 
 # Returns
 
 - `Array2<f32>`
-    A two-dimensional array of floating-point numbers, where each element (i, j) is the Euclidean distance between the i-th point in `a` and the j-th point in `b`. The resulting array has dimensions `[number_of_points_a, number_of_points_b]`.
+  A two-dimensional array of floating-point numbers, where each element (i, j) is the Euclidean distance between the i-th point in `a` and the j-th point in `b`. The resulting array has dimensions `[number_of_points_a, number_of_points_b]`.
 
 This function is useful for computing distances between two sets of points in machine learning algorithms, such as clustering, where the calculation of distances between points is a common operation.
 */
@@ -524,13 +524,13 @@ This function computes the correlation coefficients for every pair of variables 
 # Parameters
 
 - `x`: &`ArrayBase`<S, Ix2>
-    A two-dimensional array where each column represents a variable and each row represents an observation. The input array `x` must have floating-point numbers (`f32`).
+  A two-dimensional array where each column represents a variable and each row represents an observation. The input array `x` must have floating-point numbers (`f32`).
 
 # Returns
 
 - `Array2<f32>`
-    A two-dimensional array of floating-point numbers representing the correlation coefficient matrix of the input variables. The dimensions of the returned matrix are `(x.ncols(), x.ncols())`,
-    where each element (i, j) is the correlation coefficient between the i-th and j-th variables in the input dataset.
+  A two-dimensional array of floating-point numbers representing the correlation coefficient matrix of the input variables. The dimensions of the returned matrix are `(x.ncols(), x.ncols())`,
+  where each element (i, j) is the correlation coefficient between the i-th and j-th variables in the input dataset.
 */
 fn corrcoef(x: &Array2<f32>) -> Array2<f32> {
     let x = x.t();
@@ -573,12 +573,12 @@ It is useful for identifying the largest element outside the main diagonal, whic
 # Parameters
 
 - `r`: &Array2<f32>
-    A two-dimensional square array of floating-point numbers. The function considers elements outside the main diagonal for its calculation.
+  A two-dimensional square array of floating-point numbers. The function considers elements outside the main diagonal for its calculation.
 
 # Returns
 
 - `f32`
-    The maximum absolute value among all off-diagonal elements of the matrix `r`.
+  The maximum absolute value among all off-diagonal elements of the matrix `r`.
 
 This function is commonly used in numerical analysis and matrix computations, especially in algorithms that involve matrix diagonalization or convergence checks.
 */
@@ -599,12 +599,12 @@ If the slice contains fewer than two non-NaN values, the function calculates the
 # Parameters
 
 - `values`: Array1<f32>
-    A slice of floating-point numbers, potentially containing NaN values, from which the mean of the first two valid values will be calculated.
+  A slice of floating-point numbers, potentially containing NaN values, from which the mean of the first two valid values will be calculated.
 
 # Returns
 
 - `f32`
-    The mean of the first two non-NaN values in the input slice. If the input contains fewer than two non-NaN values, the mean of available non-NaN values is returned. If no valid values are present, 0.0 is returned.
+  The mean of the first two non-NaN values in the input slice. If the input contains fewer than two non-NaN values, the mean of available non-NaN values is returned. If no valid values are present, 0.0 is returned.
 
 # Note
 
@@ -632,15 +632,15 @@ This is particularly useful in data manipulation tasks where certain observation
 # Parameters
 
 - `arr`: Array2<f32>
-    The original two-dimensional array from which rows will be removed. It should be of any size but with floating-point numbers (f32).
+  The original two-dimensional array from which rows will be removed. It should be of any size but with floating-point numbers (f32).
 
 - `indices`: Array1<usize>
-    An array of row indices to be removed from `arr`. Indices should be zero-based and can be in any order. If an index is out of bounds (i.e., greater than or equal to `arr.nrows()`), it will be ignored.
+  An array of row indices to be removed from `arr`. Indices should be zero-based and can be in any order. If an index is out of bounds (i.e., greater than or equal to `arr.nrows()`), it will be ignored.
 
 # Returns
 
 - `Array2<f32>`
-    A new two-dimensional array that is a copy of `arr` with the specified rows removed. If all specified indices are out of bounds, the returned array will be identical to `arr`.
+  A new two-dimensional array that is a copy of `arr` with the specified rows removed. If all specified indices are out of bounds, the returned array will be identical to `arr`.
 */
 fn delete_rows(arr: &Array2<f32>, indices: &Array1<usize>) -> Array2<f32> {
     let mut to_delete = vec![false; arr.nrows()];
@@ -661,7 +661,7 @@ fn delete_rows(arr: &Array2<f32>, indices: &Array1<usize>) -> Array2<f32> {
         Axis(0),
         &new_vec.iter().map(ArrayBase::view).collect::<Vec<_>>(),
     )
-    .unwrap_or_else(|_| panic!("Error stacking rows back into an array."))
+    .unwrap_or_else(|_| panic!("Error stacking rows back into an array, missmatched array shapes"))
 }
 
 /**
@@ -673,17 +673,15 @@ This ensures that NaN values are moved to the end of each row after sorting. The
 # Parameters
 
 - `array`: &mut Array2<f32>
-    A mutable reference to a two-dimensional array of floating-point numbers. The array is modified in place, with each row sorted according to the rules specified.
+  A mutable reference to a two-dimensional array of floating-point numbers. The array is modified in place, with each row sorted according to the rules specified.
 
 The function's approach to handling NaN values makes it particularly useful in data processing and analysis tasks where NaN represents missing or undefined data that should not interfere with sorting operations.
 */
 fn sort_array2(array: &mut Array2<f32>) {
     for mut row in array.axis_iter_mut(Axis(0)) {
-        if let Some(row_slice) = row.as_slice_mut() {
-            // Custom sort using total_cmp for consistent ordering, including NaN handling
-            row_slice.sort_by(f32::total_cmp);
-        } else {
-            panic!("Failed to obtain mutable slice from row");
+        match row.as_slice_mut() {
+            Some(row_slice) => row_slice.sort_by(f32::total_cmp),
+            None => unreachable!("Failed to obtain mutable slice from row"),
         }
     }
 }
@@ -697,12 +695,12 @@ This is useful for data analysis tasks where NaN values represent missing data a
 # Parameters
 
 - `vec`: &[f32]
-    A slice of floating-point numbers which may include NaN values alongside regular floating-point numbers.
+  A slice of floating-point numbers which may include NaN values alongside regular floating-point numbers.
 
 # Returns
 
 - `Option<usize>`
-    An `Option` containing the index of the minimum non-NaN value in the slice. Returns `None` if the slice is empty or contains only NaN values, indicating that a minimum value could not be determined under the given conditions.
+  An `Option` containing the index of the minimum non-NaN value in the slice. Returns `None` if the slice is empty or contains only NaN values, indicating that a minimum value could not be determined under the given conditions.
 
 This function is particularly useful in statistical computations and data preprocessing, where it's common to encounter and need to gracefully handle NaN values.
 
@@ -731,12 +729,12 @@ This is useful for tasks that require sorting data while retaining a mapping bac
 # Parameters
 
 - `array`: &Array2<f32>
-    A reference to a two-dimensional array of floating-point numbers. The array is not modified by this function.
+  A reference to a two-dimensional array of floating-point numbers. The array is not modified by this function.
 
 # Returns
 
 - `Array2<usize>`
-    A two-dimensional array of the same shape as `array`, where each element in the array represents the original index of the corresponding sorted element in each column of the input array.
+  A two-dimensional array of the same shape as `array`, where each element in the array represents the original index of the corresponding sorted element in each column of the input array.
 
 This function is particularly useful in data analysis and preprocessing where sorting is needed but the original indices must be retained for further processing or analysis.
 
