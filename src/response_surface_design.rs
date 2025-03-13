@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 pub use ndarray::Array2;
 use ndarray::{array, concatenate, s, Axis};
+use std::ops::Div;
 
 /*
 This code was originally published by the following individuals for use with Scilab:
@@ -164,9 +165,9 @@ pub fn bbdesign(n: u16) -> Result<Array2<i16>, String> {
 
 /// computation algorithm for bbdesign
 fn bb_algorithm(n: u16) -> Array2<i16> {
-    let h_fact = super::factorial_design::ff2n(2).unwrap(); // we know this to be valid
+    let h_fact = super::factorial_design::ff2n(2).expect("cannot fail"); // we know this to be valid
 
-    let nb_lines: usize = (n * (n - 1) / 2) as usize * h_fact.shape()[0];
+    let nb_lines: usize = ((n * (n - 1)).div(2)) as usize * h_fact.shape()[0];
     let mut h_array = Array2::<i16>::zeros((nb_lines, n as usize));
     let mut index = 0;
     for i in 0..n - 1 {
@@ -287,7 +288,7 @@ pub fn ccdesign(n: u16, center: &[u32], alpha: Alpha, face: Face) -> Result<Arra
             h1 = ff2n(n)?.mapv(|x| x as f32);
             (h2, _) = star(n, alpha, &[1, 1]);
         }
-    };
+    }
 
     let c1 = Array2::<i32>::zeros((center[0] as usize, n as usize)).mapv(|x| x as f32);
     let c2 = Array2::<i32>::zeros((center[1] as usize, n as usize)).mapv(|x| x as f32);
@@ -426,7 +427,7 @@ mod tests {
             [0, 0, 0],
         ];
 
-        let return_array = bbdesign(input).unwrap();
+        let return_array = bbdesign(input).expect("cannot fail");
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
@@ -482,7 +483,7 @@ mod tests {
             [0, 0, 0, 0, 0],
         ];
 
-        let return_array = bbdesign(input).unwrap();
+        let return_array = bbdesign(input).expect("cannot fail");
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
@@ -506,7 +507,7 @@ mod tests {
             [0, 0, 0],
         ];
 
-        let return_array = bbdesign_center(n, center).unwrap(); // can't fail
+        let return_array = bbdesign_center(n, center).expect("cannot fail"); // can't fail
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
@@ -546,7 +547,7 @@ mod tests {
             [0, 0, 0, 0],
         ];
 
-        let return_array = bbdesign_center(n, center).unwrap(); // can't fail
+        let return_array = bbdesign_center(n, center).expect("cannot fail"); // can't fail
         assert_eq!(return_array, expected, "arrays aren't equal");
     }
 
@@ -572,7 +573,7 @@ mod tests {
             [0.0, 0.0],
             [0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -612,7 +613,7 @@ mod tests {
             [0.0, 0.953462],
             [0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -660,7 +661,7 @@ mod tests {
             [0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -759,7 +760,7 @@ mod tests {
             [0.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -814,7 +815,7 @@ mod tests {
             [0.0, 0.0, 0.0, 1.0],
             [0.0, 0.0, 0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -852,7 +853,7 @@ mod tests {
             [0., 0.],
             [0., 0.],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -905,7 +906,7 @@ mod tests {
             [0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0],
         ];
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
@@ -924,7 +925,7 @@ mod tests {
         let alpha = Alpha::Faced;
         let face = Face::Circumscribed;
 
-        let return_array = ccdesign(n, &center, alpha, face).unwrap();
+        let return_array = ccdesign(n, &center, alpha, face).expect("cannot fail");
 
         assert_eq!(
             return_array.shape(),
