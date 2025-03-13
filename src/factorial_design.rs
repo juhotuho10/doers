@@ -3,7 +3,7 @@ use itertools::Itertools;
 pub use ndarray::Array2;
 use ndarray::{concatenate, s, Array, Array1, Array3, ArrayBase, ArrayViewMut1, Axis};
 use regex::Regex;
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Div};
 
 /*
 This code was originally published by the following individuals for use with Scilab:
@@ -99,7 +99,7 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
     let mut range_repeat = num_lines;
 
     for (i, &level) in levels.iter().enumerate() {
-        range_repeat /= level as u64;
+        range_repeat /= level as u64; // it's already checked that all levels are 1 or higher
 
         // taking the slice of the array and mutating it in place without copying or moving
         let slice = array.slice_mut(s![.., i]);
@@ -221,8 +221,6 @@ pub fn pbdesign(n: u32) -> Array2<i16> {
         }
     }
 
-    let exp = exponents[k] - 1;
-
     let mut h_array: Array2<i32> = match k {
         0 => Array2::ones((1, 1)),
         1 => {
@@ -258,7 +256,8 @@ pub fn pbdesign(n: u32) -> Array2<i16> {
         _ => unreachable!("Invalid value for k, this shouldn't happen"),
     };
 
-    for _ in 0..exp {
+    // k always in 0..3, checked by the previous match
+    for _ in 0..(exponents[k] - 1) {
         let h_top: Array2<i32> = concatenate![Axis(1), h_array.clone(), h_array.clone()];
         let h_bottom: Array2<i32> = concatenate![Axis(1), h_array.clone(), -h_array.clone()];
         h_array = concatenate![Axis(0), h_top, h_bottom];
@@ -293,7 +292,7 @@ pub fn pbdesign(n: u32) -> Array2<i16> {
  # Returns
 
  - `Result<Vec<Array2<u16>>, String>` with `n_designs` amount of complementary `Array2<u16>` matrices that have complementary designs,
-    where the design size will be reduced down by reduction size
+   where the design size will be reduced down by reduction size
 
  # Errors
 
@@ -398,11 +397,14 @@ let example_array = gsd(&levels, reductions, n_arrays);
 pub fn gsd(levels: &[u16], reduction: u16, n_designs: u16) -> Result<Vec<Array2<u16>>, String> {
     if reduction < 2 {
         return Err("The level of reductions must 2 or higher".to_string());
-    } else if n_designs < 1 {
+    }
+    if n_designs < 1 {
         return Err("The number of designs must be 1 or higher".to_string());
-    } else if levels.iter().any(|&x| x < 2) {
+    }
+    if levels.iter().any(|&x| x < 2) {
         return Err("All level nums must be 2 or higher".to_string());
-    } else if levels.len() < 2 {
+    }
+    if levels.len() < 2 {
         return Err("Levels must have 2 or more numbers".to_string());
     }
 
@@ -475,9 +477,9 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: u16) -> Array3<u16
                 .filter_map(|&i| a_matrices.get(i).cloned())
                 .collect();
             for (constant, other_a) in first_row.iter().zip(zip_array.iter()) {
-                let repeat_array: Array1<u16> = Array::from_elem(other_a.shape()[0], *constant);
-                let repeat_array: Array2<u16> = repeat_array.insert_axis(Axis(1));
-                let combined = concatenate![Axis(1), repeat_array, *other_a];
+                let repeat_array_1: Array1<u16> = Array::from_elem(other_a.shape()[0], *constant);
+                let repeat_array_2: Array2<u16> = repeat_array_1.insert_axis(Axis(1));
+                let combined = concatenate![Axis(1), repeat_array_2, *other_a];
                 sub_a.push(combined);
             }
             let new_a_matrix = concatenate(
@@ -552,7 +554,7 @@ fn map_partitions_to_design(
     // Convert mappings to Array2<u16>
     let ncols = mappings[0].len();
     let flat: Vec<u16> = mappings.into_iter().flatten().collect();
-    let nrows = flat.len() / ncols;
+    let nrows = flat.len().div(ncols);
 
     Ok(Array2::from_shape_vec((nrows, ncols), flat).unwrap() - 1)
 }
