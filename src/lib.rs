@@ -1,3 +1,4 @@
+// Lint groups to warn about
 #![warn(
     clippy::complexity,
     clippy::correctness,
@@ -5,7 +6,20 @@
     clippy::perf,
     clippy::style,
     clippy::suspicious,
-    clippy::pedantic
+    clippy::pedantic,
+    clippy::cargo
+)]
+// warn about individual lints
+#![warn(
+    clippy::suboptimal_flops,
+    clippy::imprecise_flops,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::manual_clamp,
+    clippy::modulo_arithmetic,
+    clippy::approx_constant,
+    clippy::integer_division,
+    clippy::float_cmp
 )]
 // allowing individual pedantic lints
 #![allow(

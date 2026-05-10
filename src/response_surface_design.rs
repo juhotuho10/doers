@@ -165,17 +165,19 @@ pub fn bbdesign(n: u16) -> Result<Array2<i16>, String> {
 
 /// computation algorithm for bbdesign
 fn bb_algorithm(n: u16) -> Array2<i16> {
-    let h_fact = super::factorial_design::ff2n(2).expect("cannot fail"); // we know this to be valid
+    use crate::factorial_design::ff2n;
 
-    let nb_lines: usize = ((n * (n - 1)).div(2)) as usize * h_fact.shape()[0];
+    let h_fact = ff2n(2).expect("cannot fail"); // we know this to be valid
+    let h_fact_size = h_fact.shape()[0];
+
+    let nb_lines: usize = ((n * (n - 1)).div(2)) as usize * h_fact_size;
     let mut h_array = Array2::<i16>::zeros((nb_lines, n as usize));
     let mut index = 0;
     for i in 0..n - 1 {
         for j in i + 1..n {
             index += 1;
-            let maybe_start_index = (index - 1) * h_fact.shape()[0];
-            let start_index = 0.max(maybe_start_index);
-            let end_index = index * h_fact.shape()[0];
+            let start_index = (index - 1) * h_fact_size;
+            let end_index = index * h_fact_size;
             for (spot, num) in [i, j].iter().enumerate() {
                 let mut slice = h_array.slice_mut(s![start_index..end_index, *num as usize]);
                 let i_replacement = h_fact.slice(s![.., spot]);
@@ -246,7 +248,7 @@ let output = ccdesign(n, &center, alpha, face);
 */
 #[allow(dead_code, clippy::cast_precision_loss)] // ff2n values will never lose precision with f32
 pub fn ccdesign(n: u16, center: &[u32], alpha: Alpha, face: Face) -> Result<Array2<f32>, String> {
-    use super::factorial_design::ff2n;
+    use crate::factorial_design::ff2n;
 
     if n < 2 {
         return Err("The number of factors in the design (n) must be 2 or higher".to_owned());

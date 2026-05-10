@@ -5,13 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) but MINOR version before 1.0.0 might be breaking
 
 
-## [Unreleased] - 2024-12-07
+## [Unreleased] - 2026-04-10
 
 ### Added
 - 
 
 ### Fixed
 - made Array2 into a pub use so that maybe could use my crate without having to get ndarray separately
+- minor fixes to the documentation formatting
+- changed infallible unwraps to expect
+- new clippy lints and clippy cleanup
+
+### Changed
+- update itertools to 0.14.0
+- update regex to 1.12.3
 
 ## [0.2.0] - 2024-10-15
 ### Interface breaking chages:

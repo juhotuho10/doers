@@ -89,7 +89,7 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
 
     if num_lines > usize::MAX as u64 {
         return Err("Number of lines exceeds maximum allowable size.".to_string());
-    } else if levels.iter().any(|&x| x == 0) {
+    } else if levels.contains(&0) {
         return Err("All level sizes must be 1 or higher".to_string());
     }
 
@@ -167,7 +167,7 @@ pub fn ff2n(n: u16) -> Result<Array2<i16>, String> {
 
     let return_vec = fullfact(&vec)?;
 
-    let return_vec = return_vec.mapv(|x| i16::try_from(x).unwrap()); // unwrap never fails since always under i16::MAX
+    let return_vec = return_vec.mapv(|x| i16::try_from(x).expect("infallible")); // unwrap never fails since always under i16::MAX
     Ok(2 * return_vec - 1)
 }
 
