@@ -227,11 +227,10 @@ pub fn lhs_maximin(n: u16, samples: u16, random_state: u64, iterations: u16) -> 
     for _ in 0..iterations {
         let random_int = rng.gen_range(0..u64::MAX);
         let h_candidate = lhs_classic(n, samples, random_int);
-        let dist_array = pairwise_euclidean_dist(&h_candidate).to_owned();
-        let min_dist = *dist_array
+        let min_dist = pairwise_euclidean_dist(&h_candidate)
             .iter()
-            .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
-            .unwrap(); // Safe since will always have a valid comparison order
+            .copied()
+            .fold(f32::INFINITY, f32::min); // distances are never NaN, so this is a valid total order
         if min_dist > max_dist {
             max_dist = min_dist;
             h_array = h_candidate;
@@ -295,8 +294,7 @@ pub fn lhs_correlate(n: u16, samples: u16, random_state: u64, iterations: u16) -
         let max_corr = corr
             .iter()
             .filter(|&&x| x < 1.0)
-            .map(|x| x.abs())
-            .fold(f32::MIN, f32::max);
+            .fold(0.0f32, |acc, &x| acc.max(x.abs()));
 
         if max_corr < mincorr {
             mincorr = max_abs_off_diagonal(&corr);
@@ -499,13 +497,7 @@ fn cdist_euclidean(a: &Array2<f32>, b: &Array2<f32>) -> Array2<f32> {
     let mut distances = Array2::<f32>::zeros((a.nrows(), b.nrows()));
     for (i, a_row) in a.outer_iter().enumerate() {
         for (j, b_row) in b.outer_iter().enumerate() {
-            let distance = a_row
-                .iter()
-                .zip(b_row.iter())
-                .map(|(&a_val, &b_val)| (a_val - b_val).powi(2))
-                .sum::<f32>()
-                .sqrt();
-            distances[[i, j]] = distance;
+            distances[[i, j]] = euclidean_distance(&a_row.to_owned(), &b_row.to_owned());
         }
     }
     distances
@@ -535,35 +527,30 @@ This function computes the correlation coefficients for every pair of variables 
 fn corrcoef(x: &Array2<f32>) -> Array2<f32> {
     let x = x.t();
     let means = x.mean_axis(Axis(0)).unwrap();
-    let mut cov_matrix = Array2::<f32>::zeros((x.ncols(), x.ncols()));
 
-    for i in 0..x.ncols() {
-        for j in 0..x.ncols() {
-            let xi = x.column(i).to_owned() - means[i];
-            let xj = x.column(j).to_owned() - means[j];
-            let cov = xi.dot(&xj) / xi.len() as f32;
-            cov_matrix[[i, j]] = cov;
-        }
+    // center the data, then compute the full covariance matrix with a single matmul
+    let mut x_centered = x.to_owned();
+    for (mut col, &mean) in x_centered.columns_mut().into_iter().zip(means.iter()) {
+        col -= mean;
     }
+    let mut cov_matrix = x_centered.t().dot(&x_centered) / x.nrows() as f32;
 
     // Convert covariance matrix to correlation coefficient matrix
     let variances = cov_matrix.diag().mapv(f32::sqrt);
-    for i in 0..cov_matrix.nrows() {
-        for j in 0..cov_matrix.ncols() {
-            if i != j {
-                cov_matrix[[i, j]] /= variances[i] * variances[j];
-            }
+    let sigma: Array1<f32> = variances; // outer product of standard deviations
+    let n_rows = cov_matrix.nrows();
+    let n_cols = cov_matrix.ncols();
+    for (i, j) in (0..n_rows).flat_map(|i| (0..n_cols).map(move |j| (i, j))) {
+        if i != j {
+            cov_matrix[[i, j]] /= sigma[i] * sigma[j];
         }
     }
 
     // Ensure diagonal elements are 1.0
-    for i in 0..cov_matrix.nrows() {
-        cov_matrix[[i, i]] = 1.0;
-    }
+    cov_matrix.diag_mut().fill(1.0);
 
     cov_matrix
 }
-
 /**
 Finds the maximum absolute value of the off-diagonal elements in a square matrix.
 
@@ -708,15 +695,9 @@ This function is particularly useful in statistical computations and data prepro
 fn argmin_ignore_nan(vec: &[f32]) -> Option<usize> {
     vec.iter()
         .enumerate()
-        .filter_map(|(index, &value)| {
-            if value.is_nan() {
-                None
-            } else {
-                Some((index, value))
-            }
-        })
-        .min_by(|x, y| x.1.partial_cmp(&y.1).unwrap_or(std::cmp::Ordering::Equal)) // min by value
-        .map(|(index, _)| index) // index of the value
+        .filter(|&(_, &value)| !value.is_nan())
+        .min_by(|(_, &a), (_, &b)| a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal))
+        .map(|(index, _)| index)
 }
 
 /**

@@ -103,20 +103,18 @@ pub fn fullfact(levels: &[u16]) -> Result<Array2<u16>, String> {
 
         // taking the slice of the array and mutating it in place without copying or moving
         let slice = array.slice_mut(s![.., i]);
-        build_level(slice, level, level_repeat, range_repeat);
-        level_repeat *= level;
+        build_level(slice, level, level_repeat, range_repeat as usize);
+        level_repeat *= level as usize;
     }
     Ok(array)
 }
 
-fn build_level(mut output: ArrayViewMut1<u16>, level: u16, repeat: u16, range_repeat: u64) {
-    let mut count: usize = 0;
+fn build_level(mut output: ArrayViewMut1<u16>, level: u16, repeat: usize, range_repeat: usize) {
+    let mut offset = 0;
     for _ in 0..range_repeat {
         for j in 0..level {
-            for _ in 0..repeat {
-                output[count] = j;
-                count += 1;
-            }
+            output.slice_mut(s![offset..offset + repeat]).fill(j);
+            offset += repeat;
         }
     }
 }
@@ -258,18 +256,19 @@ pub fn pbdesign(n: u32) -> Array2<i16> {
 
     // k always in 0..3, checked by the previous match
     for _ in 0..(exponents[k] - 1) {
-        let h_top: Array2<i32> = concatenate![Axis(1), h_array.clone(), h_array.clone()];
-        let h_bottom: Array2<i32> = concatenate![Axis(1), h_array.clone(), -h_array.clone()];
-        h_array = concatenate![Axis(0), h_top, h_bottom];
+        let (rows, cols) = h_array.dim();
+        let mut doubled: Array2<i32> = Array2::zeros((rows * 2, cols * 2));
+        doubled.slice_mut(s![..rows, ..cols]).assign(&h_array);
+        doubled.slice_mut(s![..rows, cols..]).assign(&h_array);
+        doubled.slice_mut(s![rows.., ..cols]).assign(&h_array);
+        doubled.slice_mut(s![rows.., cols..]).assign(&-h_array);
+        h_array = doubled;
     }
 
     // Reduce the size of the matrix as needed
     let keep = keep.min(h_array.shape()[0]);
-    let h: Array2<i32> = h_array.slice(s![.., 1..=keep]).to_owned();
-
     // Flip the matrix upside down
-    let h_flipped: Array2<i32> = h.slice(s![..;-1, ..]).to_owned();
-    h_flipped.mapv(|x| x as i16)
+    h_array.slice(s![..;-1, 1..=keep]).mapv(|x| x as i16)
 }
 
 /**
@@ -471,14 +470,10 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: u16) -> Array3<u16
         for i in 0..a_matrices.len() {
             let mut sub_a: Vec<Array2<u16>> = vec![];
 
-            let indexes = latin_square.slice(s![i, ..]).mapv(|x| x as usize);
-            let zip_array: Vec<Array2<u16>> = indexes
-                .iter()
-                .filter_map(|&i| a_matrices.get(i).cloned())
-                .collect();
-            for (constant, other_a) in first_row.iter().zip(zip_array.iter()) {
-                let repeat_array_1: Array1<u16> = Array::from_elem(other_a.shape()[0], *constant);
-                let repeat_array_2: Array2<u16> = repeat_array_1.insert_axis(Axis(1));
+            for (&index, &constant) in latin_square.slice(s![i, ..]).iter().zip(first_row.iter()) {
+                let other_a = &a_matrices[index as usize];
+                let repeat_array_2: Array2<u16> =
+                    Array::from_elem((other_a.shape()[0], 1), constant);
                 let combined = concatenate![Axis(1), repeat_array_2, *other_a];
                 sub_a.push(combined);
             }
@@ -491,10 +486,6 @@ fn make_orthogonal_arrays(latin_square: &Array2<u16>, n_cols: u16) -> Array3<u16
         }
 
         a_matrices = new_a_matrices;
-
-        if a_matrices[0].shape()[1] == n_cols as usize {
-            break;
-        }
     }
 
     // converting Vec<Array2> into Array3
@@ -706,30 +697,21 @@ Each float `x` is transformed into `m * 2^e`, where `m` is the mantissa and `e` 
 A tuple of arrays (`Array1<f64>`, `Array1<i32>`) for mantissas and exponents respectively.
 */
 fn frexp(arr: &Array1<f64>) -> (Array1<f64>, Array1<i32>) {
-    let mantissas = arr.mapv(|x| {
+    let pairs = arr.mapv(|x| {
         if x == 0.0 {
-            0.0 // Mantissa for zero
+            (0.0, 0)
         } else {
-            let mut y = x.abs();
-            let exponent = y.log2().floor() + 1.0;
-            y /= f64::powf(2.0, exponent);
+            let exponent = (x.abs().log2().floor() + 1.0) as i32;
+            let mut mantissa = x.abs() / f64::powf(2.0, exponent as f64);
             if x < 0.0 {
-                -y
-            } else {
-                y
+                mantissa = -mantissa;
             }
+            (mantissa, exponent)
         }
     });
 
-    let exponents = arr.mapv(|x| {
-        if x == 0.0 {
-            0 // Exponent for zero
-        } else {
-            (x.abs().log2().floor() + 1.0) as i32
-        }
-    });
-
-    (mantissas, exponents)
+    let (mantissas, exponents): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
+    (Array1::from_vec(mantissas), Array1::from_vec(exponents))
 }
 
 /**
@@ -774,27 +756,16 @@ Constructs a Hankel matrix from initial column and row vectors.
 Returns an `Array2<i32>` representing the Hankel matrix.
 */
 fn hankel(c: &[i32], r: &[i32]) -> Array2<i32> {
-    let c = Array1::from_vec(c.to_vec());
-    let r = Array1::from_vec(r.to_vec());
-
     let n = c.len();
     let m = r.len();
 
-    // Create an uninitialized 2D array
-    let mut matrix = Array2::<i32>::zeros((n, m));
-
-    // Fill the Hankel matrix
-    for i in 0..n {
-        for j in 0..m {
-            if i + j < n {
-                matrix[[i, j]] = c[i + j];
-            } else {
-                matrix[[i, j]] = r[(i + j) % n + 1];
-            }
+    Array2::from_shape_fn((n, m), |(i, j)| {
+        if i + j < n {
+            c[i + j]
+        } else {
+            r[(i + j) % n + 1]
         }
-    }
-
-    matrix
+    })
 }
 
 // ##############################################################################################################
